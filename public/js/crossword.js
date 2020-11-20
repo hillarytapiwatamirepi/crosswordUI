@@ -289,7 +289,7 @@ function createGameRequest(puzzleID,gameID,playerID){
             id : parseInt(wordData.id),
             row :parseInt(wordData.row) ,
             col :parseInt(wordData.col) , 
-            word: wordData.word, 
+            word: parseInt(wordData.word), 
             direction:wordData.direction , 
             clue : wordData.clue , 
 
@@ -384,7 +384,7 @@ function renderClues(words){
 
     words.forEach((word)=>{
         const clueH5 = document.createElement("h5");
-        clueH5.innerText = word.id.toString() + ". "+ word.word + " (" +word.row.toString() + "," + word.col.toString() + ")" + word.clue;
+        clueH5.innerText = word.id.toString() + ". "+ word.word.toString() + " (" +word.row.toString() + "," + word.col.toString() + ")" + word.clue;
         if (word.direction==="ACROSS"){
             acrossElements.appendChild(clueH5);
 
@@ -437,7 +437,7 @@ function renderGameData(puzzleData){
                 var row =  rows[rowIndex];
                 var rowChildren = row.childNodes;
 
-                for (let dy = 0 ; dy < name.length; dy++ ) {
+                for (let dy = 0 ; dy < name; dy++ ) {
                         var coord =[rowIndex,colIndex+dy];
                         if (!seen.has(JSON.stringify(coord))){
                             var cellChild =  rowChildren[colIndex + dy];
@@ -474,7 +474,7 @@ function renderGameData(puzzleData){
                 var rowIndex=  word.row;
                 var colIndex = word.col;
 
-                for (let dx= 0 ; dx < name.length; dx++ ) {
+                for (let dx= 0 ; dx < name; dx++ ) {
                     //get row and children
                     var row =  rows[rowIndex + dx];
                     var rowChildren = row.childNodes;
@@ -521,7 +521,7 @@ function renderGameData(puzzleData){
 
             if (word.direction === "ACROSS"){
 
-                var name = word.word;
+   
                 var rowIndex = word.row;
                 var colIndex = word.col;
 
@@ -534,7 +534,7 @@ function renderGameData(puzzleData){
 
             }else{
 
-                var name = word.word;
+     
                 var rowIndex=  word.row;
                 var colIndex = word.col;
                 var row =  rows[rowIndex];
