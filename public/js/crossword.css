@@ -1,0 +1,101 @@
+#grid{
+
+    /* display:grid;
+    height :750px;
+    width: 750px; */
+}
+.normal-cell{
+
+    width: 50px;
+    height: 50px;
+
+}
+.grid-cell-black{
+
+    width: 65px;
+    height: 65px;
+    border: 1px solid black;
+    background-color:black;
+ 
+}
+
+.grid-cell-white{
+
+    width: 65px;
+    height: 65px;
+    border: 1px solid black;
+    background-color:white;
+    display:flex;
+    flex-direction:row;
+    
+
+}
+
+.grid-cell-white-with-label{
+
+    width: 50px;
+    height: 50px;
+    border: 1px solid black;
+    background-color:white;
+    display:flex;
+    flex-direction: column;
+
+ 
+}
+.grid-cell-input{
+
+    width: 35px;
+    height: 35px;
+ 
+}
+
+.grid-cell-input-label{
+   
+    color: black;
+    height : 0.2rem;
+
+   
+
+}
+
+
+.grid-cell-middle{
+
+    display:flex;
+    flex-direction:column;
+
+
+}
+
+.grid-cell-top{
+
+    height : 15px;
+    text-align:center;
+
+}
+.grid-cell-bottom{
+
+    height : 10px;
+
+
+}
+.grid-cell-left{
+
+    width : 10px;
+    text-align:center;
+    padding-top:1rem;
+
+}
+
+.grid-cell-right{
+
+ width : 10px;
+    
+}
+.grid-row{
+
+    display:flex;
+    flex-direction:row;
+
+
+}
