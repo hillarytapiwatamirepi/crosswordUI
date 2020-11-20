@@ -148,3 +148,71 @@ table.memory-board {
   /**
   create nice acade button
   */
+
+  #crossword-play{
+
+
+    height: 3rem;
+    width: 10rem;
+    background-color: lightblue; 
+
+    
+
+  }
+
+/**
+  puzzles
+*/
+
+.puzzle-container{
+
+
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content: space-evenly;
+    border: 1px solid black;
+    height: 100px;
+    width: 500px;
+    padding:1rem;
+
+
+}
+
+.puzzle-button{
+
+    height: 3rem;
+    width: 7rem;
+    color:white;
+    background-color: lightblue; 
+
+}
+
+.ui-accessories{
+
+
+    display:flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+
+
+
+
+
+}
+
+
+/**
+
+  games 
+
+*/
+.game{
+   
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-decoration: underline;
+
+
+}

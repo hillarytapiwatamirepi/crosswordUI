@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"> 
 <title>Play Memory Scramble</title>
-<link href="../../../web/handout-style.css" rel="stylesheet">
-<link href="memory.css" rel="stylesheet">
+<!-- <link href="../../../web/handout-style.css" rel="stylesheet"> -->
+<link href="./js/crossword.css" rel="stylesheet">
 <style>
 body {
   margin: 38px;
@@ -28,15 +28,31 @@ h1 {
 </style>
 </head>
 <body>
-<h1>Memory Scramble</h1>
+<h1>Crossword Extravaganza</h1>
 <div class="form-inline">
 <input id="crossword-server" class="form-control" type="text" value="localhost:4949" readonly></input>
 <button id="crossword-play" class="btn btn-info">Open Arcade!</button>
+</div>
 
+<div class="ui-accessories" >
+    <div id="puzzlesID" class="puzzles">
+        <h2> My Puzzles</h2>
+
+
+    </div>
+
+    <div id="gamesID" class="games">
+        <h2> My Games</h2>
+
+
+    </div>
 
 </div>
 
+<div class="game"> 
+    <h2> Current Game </h2>
 
+</div>
 
 
 <table id="memory-board" class="memory-board"></table>
@@ -45,12 +61,11 @@ h1 {
 
   
 <div class="panel-body">
-Cards you control are yellow. A card you are blocked on is green.
-<br>
+
 To see logging output and errors, open your browser&rsquo;s JavaScript Console.
 </div>
 </div>
-<script src="memory.js"></script>
+<script src="./js/crossword.js"></script>
 <script>memoryGame()</script>
 <script>
 (function saveAndRestoreServer() {
