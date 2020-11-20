@@ -382,7 +382,10 @@ function renderGameData(puzzleData){
     var rows = gridTable.childNodes;
 
     function configureData(puzzleData){
+
+        
         var seen = new Set();
+
 
         puzzleData.words.forEach((word)=>{
         
