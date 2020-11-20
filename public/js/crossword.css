@@ -3,6 +3,11 @@
     /* display:grid;
     height :750px;
     width: 750px; */
+    display:flex;
+    flex-direction: row;
+    align-items:center;
+    justify-content:space-between;
+
 }
 .normal-cell{
 
@@ -214,6 +219,26 @@ table.memory-board {
     flex-direction:column;
     align-items:center;
     text-decoration: underline;
+
+
+}
+
+/**
+
+  clues
+
+*/
+
+.across-clues{
+
+
+  
+
+}
+
+.downclues{
+
+
 
 
 }

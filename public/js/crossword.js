@@ -299,6 +299,7 @@ function createGameRequest(puzzleID,gameID,playerID){
 
     //   console.log(actualGameData);
       renderGameData(actualGameData);
+      
 
 
     });
@@ -363,10 +364,48 @@ function createGame(puzzleID){
 }
 
 
+function renderClues(words){
+
+    const clueBlock = document.getElementById("clues");
+
+    const acrossH2 = document.createElement("h2");
+    acrossH2.innerText = "ACROSS";
+
+    const downH2 = document.createElement("h2");
+    downH2.innerText ="DOWN";
+
+    const acrossElements = document.createElement("div");
+    const downElements = document.createElement("div");
+
+    acrossElements.appendChild(acrossH2);
+    downElements.appendChild(downH2);
+
+
+
+    words.forEach((word)=>{
+        const clueH5 = document.createElement("h5");
+        clueH5.innerText = word.id.toString() + ". "+ word.word + " (" +word.row.toString() + "," + word.col.toString() + ")" + word.clue;
+        if (word.direction==="ACROSS"){
+            acrossElements.appendChild(clueH5);
+
+        }else{
+            downElements.appendChild(clueH5);
+        }
+    });
+
+    clueBlock.appendChild(acrossElements);
+    clueBlock.appendChild(downElements);
+
+}
+
+
 function renderGameData(puzzleData){
 
     const grid = document.getElementById("grid");
+
+    const gridTableContainer = document.getElementById("table");
     const gridTable = document.createElement("table");
+    
     for (let i  = 0; i < puzzleData.rows ;i+=1){
         const gridRow = document.createElement("tr");
         gridRow.className= "grid-row";
@@ -383,7 +422,7 @@ function renderGameData(puzzleData){
 
     function configureData(puzzleData){
 
-        
+
         var seen = new Set();
 
 
@@ -490,7 +529,7 @@ function renderGameData(puzzleData){
                 var row =  rows[rowIndex];
                 var rowChildren = row.childNodes;
                 var cellChild =  rowChildren[colIndex];
-                cellChild.childNodes[0].innerText = word.id.toString();
+                cellChild.childNodes[0].innerText =  cellChild.childNodes[0].innerText + " " + word.id.toString();
 
 
             }else{
@@ -501,7 +540,7 @@ function renderGameData(puzzleData){
                 var row =  rows[rowIndex];
                 var rowChildren = row.childNodes;
                 var cellChild = rowChildren[colIndex];
-                cellChild.childNodes[1].childNodes[0].innerText = word.id.toString();
+                cellChild.childNodes[1].childNodes[0].innerText =cellChild.childNodes[0].innerText + " " + word.id.toString();
 
             }
 
@@ -527,6 +566,8 @@ function renderGameData(puzzleData){
         gridTable.appendChild(gridRow);
     }
 
-    grid.appendChild(gridTable);
+    gridTableContainer.appendChild(gridTable);
+    grid.appendChild(gridTableContainer);
+    renderClues(puzzleData.words);
 
 }
