@@ -55,11 +55,11 @@ function memoryGame() {
       if (playButton) { playButton.disabled = true; }
       memoryGame.server = server;
       // watchAndLook();
-      getPuzzles();
+      getPuzzles(playerID);
     };
     
     // get the puzzles 
-    function getPuzzles(){
+    function getPuzzles(playerID){
   
       var req = new XMLHttpRequest();
       req.addEventListener('load', function onPuzzleLoad() {
@@ -73,7 +73,7 @@ function memoryGame() {
               puzzleData.push(JSON.parse(exp));
             }
         });
-        drawPuzzlesTable(puzzleData)
+        drawPuzzlesTable(puzzleData,playerID)
 
 
         // console.log(JSON.parse(this.responseText));
@@ -213,19 +213,21 @@ function memoryGame() {
 
 
 
-function drawPuzzlesTable(puzzleData){
+function drawPuzzlesTable(puzzleData,playerID){
 
     const puzzlesTable = document.getElementById("puzzlesID");
     if (puzzlesTable){
     
       puzzleData.forEach((piece)=>{
-
+        
         const puzzleContainer = document.createElement("div");
         puzzleContainer.className = "puzzle-container"
 
         const puzzleH2 = document.createElement("h5");
 
         puzzleH2.innerText =  `
+
+          ID: ${piece.id}
           Name : ${piece.name}
           Description: ${piece.description}
 
@@ -235,7 +237,12 @@ function drawPuzzlesTable(puzzleData){
         puzzleButton.addEventListener("click",()=>{
 
 
-            createGame();
+            var  gameID =  createGame(piece.id);
+            createGameRequest(piece.id,gameID,playerID);
+            
+
+
+
         })
 
         puzzleButton.className = "puzzle-button";
@@ -252,7 +259,66 @@ function drawPuzzlesTable(puzzleData){
 }
 
 
-function createGame(){
+function createGameRequest(puzzleID,gameID,playerID){
+  
+    var req = new XMLHttpRequest();
+    req.addEventListener('load', function onPuzzleLoad() {
+      console.log('game response', this.responseText.replace(/\r?\n/g, '\u21B5'));
+
+      var listOfStrings = this.responseText.split(";");
+    //   console.log(listOfStrings);
+      var  gameData = []
+      listOfStrings.forEach((exp)=>{
+          if (exp!==""){
+            // console.log(exp);
+            gameData.push(JSON.parse(exp));
+          }
+      });
+
+
+      var actualGameData = {
+        rows : parseInt(gameData[0].rows) ,
+        columns : parseInt(gameData[1].columns),
+        words : []
+      }
+
+      for (let i = 2 ; i <gameData.length;i++){
+
+        var wordData = gameData[i];
+        var word = {
+            id : parseInt(wordData.id),
+            row :parseInt(wordData.row) ,
+            col :parseInt(wordData.col) , 
+            word: wordData.word, 
+            direction:wordData.direction , 
+            clue : wordData.clue , 
+
+        }
+        actualGameData.words.push(word);
+      }
+
+    //   console.log(actualGameData);
+      renderGameData(actualGameData);
+
+
+    });
+
+
+
+  //   req.addEventListener('loadstart', function onWatchStart() {
+  //     console.log('watch start');
+  //     setTimeout(look, 1);
+  //   });
+    req.addEventListener('error', function onPuzzleError() {
+      console.error('watch error', memoryGame.server);
+    });
+    req.open('GET', 'http://' + memoryGame.server + "/new/"+ puzzleID + "/" + gameID + "/" + playerID);
+    console.log('puzzles request');
+    req.send();
+    
+  }
+
+function createGame(puzzleID){
 
 
     const gamesTable = document.getElementById("gamesID");
@@ -277,6 +343,7 @@ function createGame(){
 
     gameH2.innerText =  `
       GameID : ${gameID}
+      PuzzleID : ${puzzleID}
     `
     const gameButton = document.createElement("button");
     gameButton.innerText = "Join";
@@ -288,100 +355,90 @@ function createGame(){
 
     gamesTable.appendChild(gameContainer);
 
+    return gameID;
+
+
+
 
 }
 
 
+function renderGameData(puzzleData){
 
-const grid = document.getElementById("grid");
-const gridTable = document.createElement("table");
-
-const puzzleData = {
-    rows : 3,
-    columns : 4,
-    words : [
-        {   
-            id : 1 ,
-            row :0 ,
-            col :1 , 
-            word:"cat" , 
-            direction:"DOWN" , 
-            clue : "feline companion" , 
-        
-        },
-        {   
-            id : 2 , 
-            row : 1,
-            col : 0 ,
-            word: "mat", 
-            direction:  "ACROSS", 
-            clue : "lounging place for feline companion" , 
-        
-        },
-        {   
-            id : 3 ,
-            row : 0,
-            col : 1 , 
-            word: "car", 
-            direction: "ACROSS", 
-            clue : "gas powered vehicle" , 
-        
-        },
-        {   
-            id : 4, 
-            row :2,
-            col :1 ,
-            word: "tax", 
-            direction: "ACROSS" , 
-            clue :  "feline companion", 
-
+    const grid = document.getElementById("grid");
+    const gridTable = document.createElement("table");
+    for (let i  = 0; i < puzzleData.rows ;i+=1){
+        const gridRow = document.createElement("tr");
+        gridRow.className= "grid-row";
+        for (let j = 0 ; j < puzzleData.columns ; j ++){
+            const gridCell = document.createElement("td");
+            gridCell.className ="grid-cell-black";
+            gridRow.appendChild(gridCell);
         }
 
-    ]
-
-
-
-
-}
-
-
-
-
-for (let i  = 0; i < puzzleData.rows ;i+=1){
-    const gridRow = document.createElement("tr");
-    gridRow.className= "grid-row";
-    for (let j = 0 ; j < puzzleData.columns ; j ++){
-        const gridCell = document.createElement("td");
-        gridCell.className ="grid-cell-black";
-        gridRow.appendChild(gridCell);
+        gridTable.appendChild(gridRow);
     }
 
-    gridTable.appendChild(gridRow);
-}
+    var rows = gridTable.childNodes;
 
+    function configureData(puzzleData){
+        var seen = new Set();
 
+        puzzleData.words.forEach((word)=>{
+        
+            if (word.direction === "ACROSS"){
+                var name = word.word;
+                var rowIndex = word.row;
+                var colIndex = word.col;
 
-var rows = gridTable.childNodes;
+                // get row and children for the start of the word
+                var row =  rows[rowIndex];
+                var rowChildren = row.childNodes;
 
+                for (let dy = 0 ; dy < name.length; dy++ ) {
+                        var coord =[rowIndex,colIndex+dy];
+                        if (!seen.has(JSON.stringify(coord))){
+                            var cellChild =  rowChildren[colIndex + dy];
+                            var cellDivTop = document.createElement("div");
+                            cellDivTop.className="grid-cell-top";
+                            var cellDivRightSide = document.createElement("div");
+                            cellDivRightSide.className="grid-cell-right";
+                            var cellDivLeftSide =  document.createElement("div");
+                            cellDivLeftSide.className="grid-cell-left";
+                            var cellDivBottomSide =  document.createElement("div");
+                            cellDivBottomSide.className="grid-cell-bottom";
+                
+                            // cell input and label shenanigans
+                            var cellInput = document.createElement("input");
+                            cellInput.className = "grid-cell-input";
+                
+                
+                            // do the middle
+                            var middleDivSide = document.createElement("div");
+                            middleDivSide.appendChild(cellDivTop);
+                            middleDivSide.appendChild(cellInput);
+                            middleDivSide.appendChild(cellDivBottomSide);
+                
+                            // add all the parts.
+                            cellChild.appendChild(cellDivLeftSide);
+                            cellChild.appendChild(middleDivSide);
+                            cellChild.appendChild(cellDivRightSide);
+                            cellChild.className="grid-cell-white";
+                            seen.add(JSON.stringify(coord))
+                        }
+                }
+            }else{
+                var name = word.word;
+                var rowIndex=  word.row;
+                var colIndex = word.col;
 
-function configureData(){
-    var seen = new Set();
-
-    puzzleData.words.forEach((word)=>{
-    
-        if (word.direction === "ACROSS"){
-            var name = word.word;
-            var rowIndex = word.row;
-            var colIndex = word.col;
-
-            // get row and children for the start of the word
-            var row =  rows[rowIndex];
-            var rowChildren = row.childNodes;
-
-            for (let dy = 0 ; dy < name.length; dy++ ) {
-                    var coord =[rowIndex,colIndex+dy];
+                for (let dx= 0 ; dx < name.length; dx++ ) {
+                    //get row and children
+                    var row =  rows[rowIndex + dx];
+                    var rowChildren = row.childNodes;
+                    var coord = [rowIndex+dx,colIndex];       
                     if (!seen.has(JSON.stringify(coord))){
-                        var cellChild =  rowChildren[colIndex + dy];
+                        var cellChild = rowChildren[colIndex];
                         var cellDivTop = document.createElement("div");
                         cellDivTop.className="grid-cell-top";
                         var cellDivRightSide = document.createElement("div");
@@ -394,7 +451,6 @@ function configureData(){
                         // cell input and label shenanigans
                         var cellInput = document.createElement("input");
                         cellInput.className = "grid-cell-input";
-            
             
                         // do the middle
                         var middleDivSide = document.createElement("div");
@@ -409,115 +465,65 @@ function configureData(){
                         cellChild.className="grid-cell-white";
                         seen.add(JSON.stringify(coord))
                     }
-            }
-        }else{
-            var name = word.word;
-            var rowIndex=  word.row;
-            var colIndex = word.col;
-
-            for (let dx= 0 ; dx < name.length; dx++ ) {
-                //get row and children
-                var row =  rows[rowIndex + dx];
-                var rowChildren = row.childNodes;
-                var coord = [rowIndex+dx,colIndex];       
-                if (!seen.has(JSON.stringify(coord))){
-                    var cellChild = rowChildren[colIndex];
-                    var cellDivTop = document.createElement("div");
-                    cellDivTop.className="grid-cell-top";
-                    var cellDivRightSide = document.createElement("div");
-                    cellDivRightSide.className="grid-cell-right";
-                    var cellDivLeftSide =  document.createElement("div");
-                    cellDivLeftSide.className="grid-cell-left";
-                    var cellDivBottomSide =  document.createElement("div");
-                    cellDivBottomSide.className="grid-cell-bottom";
         
-                    // cell input and label shenanigans
-                    var cellInput = document.createElement("input");
-                    cellInput.className = "grid-cell-input";
-        
-                    // do the middle
-                    var middleDivSide = document.createElement("div");
-                    middleDivSide.appendChild(cellDivTop);
-                    middleDivSide.appendChild(cellInput);
-                    middleDivSide.appendChild(cellDivBottomSide);
-        
-                    // add all the parts.
-                    cellChild.appendChild(cellDivLeftSide);
-                    cellChild.appendChild(middleDivSide);
-                    cellChild.appendChild(cellDivRightSide);
-                    cellChild.className="grid-cell-white";
-                    seen.add(JSON.stringify(coord))
                 }
-      
             }
-        }
 
-    });
+        });
 
-}
-
-
-
-
-
-function configureLabels(){
-
-    puzzleData.words.forEach((word)=>{
-
-        if (word.direction === "ACROSS"){
-
-            var name = word.word;
-            var rowIndex = word.row;
-            var colIndex = word.col;
-
-            // get row and children for the start of the word
-            var row =  rows[rowIndex];
-            var rowChildren = row.childNodes;
-            var cellChild =  rowChildren[colIndex];
-            cellChild.childNodes[0].innerText = word.id.toString();
-
-
-        }else{
-
-            var name = word.word;
-            var rowIndex=  word.row;
-            var colIndex = word.col;
-            var row =  rows[rowIndex];
-            var rowChildren = row.childNodes;
-            var cellChild = rowChildren[colIndex];
-            cellChild.childNodes[1].childNodes[0].innerText = word.id.toString();
-
-        }
-
-
-    })
-
-
-
-}
-
-
-configureData();
-configureLabels();
-
-
-
-
-
-
-
-for (let i  = 0; i < puzzleData.rows ;i+=1){
-    const gridRow = document.createElement("tr");
-    gridRow.className= "grid-row";
-    for (let j = 0 ; j < puzzleData.columns ; j ++){
-        const gridCell = document.createElement("td");
-        gridCell.className ="grid-cell";
-        gridRow.appendChild(gridCell);
     }
 
-    gridTable.appendChild(gridRow);
+    function configureLabels(puzzleData){
+
+        puzzleData.words.forEach((word)=>{
+
+            if (word.direction === "ACROSS"){
+
+                var name = word.word;
+                var rowIndex = word.row;
+                var colIndex = word.col;
+
+                // get row and children for the start of the word
+                var row =  rows[rowIndex];
+                var rowChildren = row.childNodes;
+                var cellChild =  rowChildren[colIndex];
+                cellChild.childNodes[0].innerText = word.id.toString();
+
+
+            }else{
+
+                var name = word.word;
+                var rowIndex=  word.row;
+                var colIndex = word.col;
+                var row =  rows[rowIndex];
+                var rowChildren = row.childNodes;
+                var cellChild = rowChildren[colIndex];
+                cellChild.childNodes[1].childNodes[0].innerText = word.id.toString();
+
+            }
+
+
+        })
+
+
+
+    }
+
+    configureData(puzzleData);
+    configureLabels(puzzleData);
+
+    for (let i  = 0; i < puzzleData.rows ;i+=1){
+        const gridRow = document.createElement("tr");
+        gridRow.className= "grid-row";
+        for (let j = 0 ; j < puzzleData.columns ; j ++){
+            const gridCell = document.createElement("td");
+            gridCell.className ="grid-cell";
+            gridRow.appendChild(gridCell);
+        }
+
+        gridTable.appendChild(gridRow);
+    }
+
+    grid.appendChild(gridTable);
+
 }
-
-
-
-grid.appendChild(gridTable);
