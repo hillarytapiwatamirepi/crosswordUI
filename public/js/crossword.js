@@ -50,7 +50,7 @@ function memoryGame() {
     memoryGame.server = server;
     // watchAndLook();
     getPuzzles(playerID);
-    getGamesRequest();
+    getGamesRequest(playerID);
 
   });
 
@@ -211,8 +211,11 @@ function drawPuzzlesTable(puzzleData, playerID) {
       const puzzleButton = document.createElement("button");
       puzzleButton.innerText = "Create Game";
       puzzleButton.addEventListener("click", () => {
-        var gameID = createGame(piece.id);
+ 
+        var gameID = createGame(piece.id,playerID);
         createGameRequest(piece.id, gameID, playerID);
+
+     
       });
 
       puzzleButton.className = "puzzle-button";
@@ -279,7 +282,102 @@ function eraseLetterRequest(url) {
 
 }
 
-function getGamesRequest(){
+function joinGameRequest(gameID,puzzleID,playerID){
+    var req = new XMLHttpRequest();
+    req.addEventListener("load", function onPuzzleLoad() {
+      console.log(
+        "game data response",
+        this.responseText.replace(/\r?\n/g, "\u21B5")
+      );
+      var listOfStrings = this.responseText.split(";");
+      var gameData = [];
+      listOfStrings.forEach((exp) => {
+        if (exp !== "") {
+          gameData.push(JSON.parse(exp));
+        }
+      });
+
+    //   console.log(gameData);
+    fillInGameData(gameData)
+
+
+
+    });
+    req.addEventListener("error", function onPuzzleError() {
+      console.error("watch error", memoryGame.server);
+    });
+    req.open("GET", "http://" + memoryGame.server + "/join/" + gameID + "/" + playerID);
+    console.log("join request");
+    req.send();
+
+
+}
+
+
+function getPuzzleUIRequest(gameID, playerID,puzzleID){
+
+    var req = new XMLHttpRequest();
+    req.addEventListener("load", function onPuzzleLoad() {
+      console.log(
+        "puzzles response",
+        this.responseText.replace(/\r?\n/g, "\u21B5")
+      );
+
+      var listOfStrings = this.responseText.split(";");
+      var gameData = [];
+      listOfStrings.forEach((exp) => {
+        if (exp !== "") {
+          // console.log(exp);
+          gameData.push(JSON.parse(exp));
+        }
+      });
+      var actualGameData = {
+        rows: parseInt(gameData[0].rows),
+        columns: parseInt(gameData[1].columns),
+        words: [],
+      };
+      for (let i = 2; i < gameData.length; i++) {
+        var wordData = gameData[i];
+        console.log("row", parseInt(wordData.row), "col", parseInt(wordData.col));
+        var word = {
+          id: parseInt(wordData.id),
+          row: parseInt(wordData.row),
+          col: parseInt(wordData.col),
+          word: parseInt(wordData.word),
+          direction: wordData.direction,
+          clue: wordData.clue,
+        };
+        actualGameData.words.push(word);
+
+      }
+    //   console.log("this is what I get from puzzleReuq",actualGameData);
+      renderGameData(gameID, playerID, actualGameData);
+    // renderGameData(gameID, playerID, puzzleData);
+
+    //   drawPuzzlesTable(puzzleData, playerID);
+
+      // console.log(JSON.parse(this.responseText));
+      // setTimeout(watchAndLook, 1);
+    });
+    //   req.addEventListener('loadstart', function onWatchStart() {
+    //     console.log('watch start');
+    //     setTimeout(look, 1);
+    //   });
+
+
+    req.addEventListener("error", function onPuzzleError() {
+      console.error("watch error", memoryGame.server);
+    });
+    req.open("GET", "http://" + memoryGame.server + "/puzzle/" + puzzleID);
+    console.log("puzzle UI request");
+    req.send();
+
+}
+
+
+
+
+function getGamesRequest(playerID){
 
     var req = new XMLHttpRequest();
     req.addEventListener("load", function onPuzzleLoad() {
@@ -296,8 +394,10 @@ function getGamesRequest(){
           gamesData.push(JSON.parse(exp));
         }
       });
-
-      drawGames(gamesData);
+     if (gamesData.length>0){
+    // console.log(gamesData)
+       drawGames(playerID,gamesData);
+     }
 
     //   drawPuzzlesTable(puzzleData, playerID);
 
@@ -324,7 +424,7 @@ function getGamesRequest(){
 
 
 
-function drawGames(gameData){
+function drawGames(playerID,gameData){
 
     const gamesTable = document.getElementById("gamesID");
     gameData.forEach((game)=>{
@@ -338,12 +438,31 @@ function drawGames(gameData){
         const gameButton = document.createElement("button");
         gameButton.innerText = "Join";
         gameButton.className = "puzzle-button";
+
+        gameButton.addEventListener("click",()=>{
+            getPuzzleUIRequest(game.gameID, playerID,game.puzzleID);
+            joinGameRequest(game.gameID,game.puzzleID,playerID);
+
+        })
         gameContainer.appendChild(gameH2);
         gameContainer.appendChild(gameButton);
         gamesTable.appendChild(gameContainer);
 
     });
 
+}
+
+
+function fillInGameData(gameData){
+    gameData.forEach((game)=>{
+        var row = game.row;
+        var col = game.col;
+        var cellID = row + "," + col;
+        var cellInput = document.getElementById(cellID);
+        if(cellInput){
+            cellInput.value = game.value;
+        }
+    });
 }
 
 
@@ -398,7 +517,7 @@ function createGameRequest(puzzleID, gameID, playerID) {
   req.send();
 }
 
-function createGame(puzzleID) {
+function createGame(puzzleID,playerID) {
   const gamesTable = document.getElementById("gamesID");
 
   var words = [
@@ -426,6 +545,13 @@ function createGame(puzzleID) {
   const gameButton = document.createElement("button");
   gameButton.innerText = "Join";
   gameButton.className = "puzzle-button";
+  gameButton.addEventListener("click",()=>{
+
+    getPuzzleUIRequest(gameID, playerID,puzzleID);
+    joinGameRequest(gameID,puzzleID,playerID);
+
+
+  });
 
   gameContainer.appendChild(gameH2);
   gameContainer.appendChild(gameButton);
@@ -472,11 +598,24 @@ function renderClues(words) {
   clueBlock.appendChild(downElements);
 }
 
+
+function removeAllChildNodes(parent) {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
+
 function renderGameData(gameID, playerID, puzzleData) {
+
   const grid = document.getElementById("grid");
-  console.log(puzzleData);
+//   console.log(puzzleData);
+
 
   const gridTableContainer = document.getElementById("table");
+  const cluesContainer =  document.getElementById("clues");
+  removeAllChildNodes(gridTableContainer);
+  removeAllChildNodes(cluesContainer);
+
   const gridTable = document.createElement("table");
 
   for (let i = 0; i < puzzleData.rows; i += 1) {
@@ -521,6 +660,7 @@ function renderGameData(gameID, playerID, puzzleData) {
 
             // cell input and label shenanigans
             var cellInput = document.createElement("input");
+            cellInput.id =  rowIndex.toString() +"," + (colIndex + dy).toString()
             cellInput.maxLength = "1";
             cellInput.className = "grid-cell-input";
 
@@ -602,6 +742,7 @@ function renderGameData(gameID, playerID, puzzleData) {
 
             // cell input and label shenanigans
             var cellInput = document.createElement("input");
+            cellInput.id =  (rowIndex+dx).toString() +"," + (colIndex).toString()
             cellInput.className = "grid-cell-input";
             cellInput.maxLength = "1";
             cellInput.onkeyup = (ev) => {
