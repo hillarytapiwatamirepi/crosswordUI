@@ -1,5 +1,7 @@
 // const e = require("express");
 
+
+
 /* Copyright (c) 2017-2020 MIT 6.031 course staff, all rights reserved. */
 
 function memoryGame() {
@@ -233,6 +235,19 @@ function checkGameRequest(gameID, playerID) {
       "game data response",
       this.responseText.replace(/\r?\n/g, "\u21B5")
     );
+    console.log("this")
+    if (this.responseText.includes("solved")){
+
+        const gameStatusContainer = document.getElementById("game-status");
+        gameStatusContainer.innerText = "Solved";
+        gameStatusContainer.style.color = "#556b2f";
+         
+
+    }else{
+
+    const gameStatusContainer = document.getElementById("game-status");
+    gameStatusContainer.innerText = "UnSolved";
+    gameStatusContainer.style.color = "#ff7f7f";
 
     var listOfStrings = this.responseText.split(";");
     var gameData = [];
@@ -243,6 +258,7 @@ function checkGameRequest(gameID, playerID) {
     });
 
     colorInvalidAnswers(gameData);
+    }
   });
 
   req.addEventListener("error", function onPuzzleError() {
@@ -407,6 +423,7 @@ function drawGames(playerID, gameData) {
     gameButton.addEventListener("click", () => {
       getPuzzleUIRequest(game.gameID, playerID, game.puzzleID);
       joinGameRequest(game.gameID, game.puzzleID, playerID);
+      checkGameRequest(game.gameID, playerID);
 
       const checkButtonContainer = document.getElementById(
         "checkgame-button-container"
@@ -466,6 +483,8 @@ function createGameRequest(puzzleID, gameID, playerID) {
   var req = new XMLHttpRequest();
   req.addEventListener("load", function onPuzzleLoad() {
     console.log("game response", this.responseText.replace(/\r?\n/g, "\u21B5"));
+
+  
 
     // var listOfStrings = this.responseText.split(";");
     // var gameData = [];
@@ -544,6 +563,7 @@ function createGame(puzzleID, playerID) {
   gameButton.addEventListener("click", () => {
     getPuzzleUIRequest(gameID, playerID, puzzleID);
     joinGameRequest(gameID, puzzleID, playerID);
+    checkGameRequest(gameID, playerID);
     const checkButtonContainer = document.getElementById(
       "checkgame-button-container"
     );
@@ -554,6 +574,7 @@ function createGame(puzzleID, playerID) {
     checkButton.innerText = "Check Solution";
     checkButton.addEventListener("click", () => {
       checkGameRequest(gameID, playerID);
+
     });
     checkButtonContainer.appendChild(checkButton);
   });
@@ -756,7 +777,7 @@ function renderGameData(gameID, playerID, puzzleData) {
                   (rowIndex + dx) +
                   "," +
                   colIndex;
-                console.log(url);
+
                 enterLetterRequest(url);
               } else {
                 var url =
@@ -770,8 +791,7 @@ function renderGameData(gameID, playerID, puzzleData) {
                   (rowIndex + dx) +
                   "," +
                   colIndex;
-                console.log(url);
-                console.log(initialValue);
+
                 eraseLetterRequest(url);
               }
             };
