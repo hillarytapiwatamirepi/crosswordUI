@@ -49,9 +49,10 @@ function memoryGame() {
     }
     memoryGame.server = server;
     // watchAndLook();
+    var welcomeContainer = document.getElementById("welcome-tag");
+    welcomeContainer.innerText = "Welcome player : " + playerID;
     getPuzzles(playerID);
     getGamesRequest(playerID);
-
   });
 
   // get the puzzles
@@ -211,11 +212,8 @@ function drawPuzzlesTable(puzzleData, playerID) {
       const puzzleButton = document.createElement("button");
       puzzleButton.innerText = "Create Game";
       puzzleButton.addEventListener("click", () => {
- 
-        var gameID = createGame(piece.id,playerID);
+        var gameID = createGame(piece.id, playerID);
         createGameRequest(piece.id, gameID, playerID);
-
-     
       });
 
       puzzleButton.className = "puzzle-button";
@@ -228,254 +226,110 @@ function drawPuzzlesTable(puzzleData, playerID) {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-function enterLetterRequest(url) {
-    var req = new XMLHttpRequest();
-
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log("game response", this.responseText.replace(/\r?\n/g, "\u21B5"));
-    });
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", memoryGame.server);
-    });
-
-
-    req.open(
-      "GET",
-      url
-    );
-    console.log("enter letter request request");
-    req.send();
-
-    
-
-}
-
-function eraseLetterRequest(url) {
-
-    var req = new XMLHttpRequest();
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log("game response", this.responseText.replace(/\r?\n/g, "\u21B5"));
-    });
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", memoryGame.server);
-    });
-
-    req.open(
-      "GET",
-      url
-    );
-    console.log("erase letter request request");
-    req.send();
-
-
-}
-
-function joinGameRequest(gameID,puzzleID,playerID){
-    var req = new XMLHttpRequest();
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log(
-        "game data response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-      var listOfStrings = this.responseText.split(";");
-      var gameData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-          gameData.push(JSON.parse(exp));
-        }
-      });
-
-    //   console.log(gameData);
-    fillInGameData(gameData)
-
-
-
-    });
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", memoryGame.server);
-    });
-    req.open("GET", "http://" + memoryGame.server + "/join/" + gameID + "/" + playerID);
-    console.log("join request");
-    req.send();
-
-
-}
-
-
-function getPuzzleUIRequest(gameID, playerID,puzzleID){
-
-    var req = new XMLHttpRequest();
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log(
-        "puzzles response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-
-      var listOfStrings = this.responseText.split(";");
-      var gameData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-          // console.log(exp);
-          gameData.push(JSON.parse(exp));
-        }
-      });
-      var actualGameData = {
-        rows: parseInt(gameData[0].rows),
-        columns: parseInt(gameData[1].columns),
-        words: [],
-      };
-      for (let i = 2; i < gameData.length; i++) {
-        var wordData = gameData[i];
-        console.log("row", parseInt(wordData.row), "col", parseInt(wordData.col));
-        var word = {
-          id: parseInt(wordData.id),
-          row: parseInt(wordData.row),
-          col: parseInt(wordData.col),
-          word: parseInt(wordData.word),
-          direction: wordData.direction,
-          clue: wordData.clue,
-        };
-        actualGameData.words.push(word);
-
-      }
-    //   console.log("this is what I get from puzzleReuq",actualGameData);
-      renderGameData(gameID, playerID, actualGameData);
-    // renderGameData(gameID, playerID, puzzleData);
-
-    //   drawPuzzlesTable(puzzleData, playerID);
-
-      // console.log(JSON.parse(this.responseText));
-      // setTimeout(watchAndLook, 1);
-    });
-    //   req.addEventListener('loadstart', function onWatchStart() {
-    //     console.log('watch start');
-    //     setTimeout(look, 1);
-    //   });
-
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", memoryGame.server);
-    });
-    req.open("GET", "http://" + memoryGame.server + "/puzzle/" + puzzleID);
-    console.log("puzzle UI request");
-    req.send();
-
-}
-
-
-
-
-function getGamesRequest(playerID){
-
-    var req = new XMLHttpRequest();
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log(
-        "puzzles response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-      var listOfStrings = this.responseText.split(";");
-    //   console.log(listOfStrings);
-      var gamesData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-   
-          gamesData.push(JSON.parse(exp));
-        }
-      });
-     if (gamesData.length>0){
-    // console.log(gamesData)
-       drawGames(playerID,gamesData);
-     }
-
-    //   drawPuzzlesTable(puzzleData, playerID);
-
-      // console.log(JSON.parse(this.responseText));
-      // setTimeout(watchAndLook, 1);
-    });
-    //   req.addEventListener('loadstart', function onWatchStart() {
-    //     console.log('watch start');
-    //     setTimeout(look, 1);
-    //   });
-
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", memoryGame.server);
-    });
-    req.open("GET", "http://" + memoryGame.server + "/currentGames");
-    console.log("games request");
-    req.send();
-
-
-
-}
-
-
-
-
-function drawGames(playerID,gameData){
-
-    const gamesTable = document.getElementById("gamesID");
-    gameData.forEach((game)=>{
-        const gameContainer = document.createElement("div");
-        gameContainer.className = "puzzle-container";    
-        const gameH2 = document.createElement("h5");  
-        gameH2.innerText = `
-            GameID : ${game.gameID}
-            PuzzleID : ${game.puzzleID}
-          `;
-        const gameButton = document.createElement("button");
-        gameButton.innerText = "Join";
-        gameButton.className = "puzzle-button";
-
-        gameButton.addEventListener("click",()=>{
-            getPuzzleUIRequest(game.gameID, playerID,game.puzzleID);
-            joinGameRequest(game.gameID,game.puzzleID,playerID);
-
-        })
-        gameContainer.appendChild(gameH2);
-        gameContainer.appendChild(gameButton);
-        gamesTable.appendChild(gameContainer);
-
-    });
-
-}
-
-
-function fillInGameData(gameData){
-    gameData.forEach((game)=>{
-        var row = game.row;
-        var col = game.col;
-        var cellID = row + "," + col;
-        var cellInput = document.getElementById(cellID);
-        if(cellInput){
-            cellInput.value = game.value;
-        }
-    });
-}
-
-
-function createGameRequest(puzzleID, gameID, playerID) {
+function checkGameRequest(gameID, playerID) {
   var req = new XMLHttpRequest();
   req.addEventListener("load", function onPuzzleLoad() {
-    console.log("game response", this.responseText.replace(/\r?\n/g, "\u21B5"));
+    console.log(
+      "game data response",
+      this.responseText.replace(/\r?\n/g, "\u21B5")
+    );
 
     var listOfStrings = this.responseText.split(";");
     var gameData = [];
     listOfStrings.forEach((exp) => {
       if (exp !== "") {
-        // console.log(exp);
+        gameData.push(JSON.parse(exp));
+      }
+    });
+
+    colorInvalidAnswers(gameData);
+  });
+
+  req.addEventListener("error", function onPuzzleError() {
+    console.error("watch error", memoryGame.server);
+  });
+  req.open(
+    "GET",
+    "http://" + memoryGame.server + "/check/" + gameID + "/" + playerID
+  );
+  console.log("join request");
+  req.send();
+}
+
+function enterLetterRequest(url) {
+  var req = new XMLHttpRequest();
+
+  req.addEventListener("load", function onPuzzleLoad() {
+    console.log("game response", this.responseText.replace(/\r?\n/g, "\u21B5"));
+  });
+
+  req.addEventListener("error", function onPuzzleError() {
+    console.error("watch error", memoryGame.server);
+  });
+
+  req.open("GET", url);
+  console.log("enter letter request request");
+  req.send();
+}
+
+function eraseLetterRequest(url) {
+  var req = new XMLHttpRequest();
+  req.addEventListener("load", function onPuzzleLoad() {
+    console.log("game response", this.responseText.replace(/\r?\n/g, "\u21B5"));
+  });
+
+  req.addEventListener("error", function onPuzzleError() {
+    console.error("watch error", memoryGame.server);
+  });
+
+  req.open("GET", url);
+  console.log("erase letter request request");
+  req.send();
+}
+
+function joinGameRequest(gameID, puzzleID, playerID) {
+  var req = new XMLHttpRequest();
+  req.addEventListener("load", function onPuzzleLoad() {
+    console.log(
+      "game data response",
+      this.responseText.replace(/\r?\n/g, "\u21B5")
+    );
+    var listOfStrings = this.responseText.split(";");
+    var gameData = [];
+    listOfStrings.forEach((exp) => {
+      if (exp !== "") {
+        gameData.push(JSON.parse(exp));
+      }
+    });
+
+    //   console.log(gameData);
+    var gameLabel = document.getElementById("current-game");
+    gameLabel.innerText = gameID;
+    fillInGameData(gameData);
+  });
+  req.addEventListener("error", function onPuzzleError() {
+    console.error("watch error", memoryGame.server);
+  });
+  req.open(
+    "GET",
+    "http://" + memoryGame.server + "/join/" + gameID + "/" + playerID
+  );
+  console.log("join request");
+  req.send();
+}
+
+function getPuzzleUIRequest(gameID, playerID, puzzleID) {
+  var req = new XMLHttpRequest();
+  req.addEventListener("load", function onPuzzleLoad() {
+    console.log(
+      "puzzles response",
+      this.responseText.replace(/\r?\n/g, "\u21B5")
+    );
+
+    var listOfStrings = this.responseText.split(";");
+    var gameData = [];
+    listOfStrings.forEach((exp) => {
+      if (exp !== "") {
         gameData.push(JSON.parse(exp));
       }
     });
@@ -486,7 +340,6 @@ function createGameRequest(puzzleID, gameID, playerID) {
     };
     for (let i = 2; i < gameData.length; i++) {
       var wordData = gameData[i];
-      console.log("row", parseInt(wordData.row), "col", parseInt(wordData.col));
       var word = {
         id: parseInt(wordData.id),
         row: parseInt(wordData.row),
@@ -497,7 +350,150 @@ function createGameRequest(puzzleID, gameID, playerID) {
       };
       actualGameData.words.push(word);
     }
+
     renderGameData(gameID, playerID, actualGameData);
+  });
+
+  req.addEventListener("error", function onPuzzleError() {
+    console.error("watch error", memoryGame.server);
+  });
+  req.open("GET", "http://" + memoryGame.server + "/puzzle/" + puzzleID);
+  console.log("puzzle UI request");
+  req.send();
+}
+
+function getGamesRequest(playerID) {
+  var req = new XMLHttpRequest();
+  req.addEventListener("load", function onPuzzleLoad() {
+    console.log(
+      "puzzles response",
+      this.responseText.replace(/\r?\n/g, "\u21B5")
+    );
+    var listOfStrings = this.responseText.split(";");
+    //   console.log(listOfStrings);
+    var gamesData = [];
+    listOfStrings.forEach((exp) => {
+      if (exp !== "") {
+        gamesData.push(JSON.parse(exp));
+      }
+    });
+    if (gamesData.length > 0) {
+      drawGames(playerID, gamesData);
+    }
+  });
+
+  req.addEventListener("error", function onPuzzleError() {
+    console.error("watch error", memoryGame.server);
+  });
+  req.open("GET", "http://" + memoryGame.server + "/currentGames");
+  console.log("games request");
+  req.send();
+}
+
+function drawGames(playerID, gameData) {
+  const gamesTable = document.getElementById("gamesID");
+  gameData.forEach((game) => {
+    const gameContainer = document.createElement("div");
+    gameContainer.className = "puzzle-container";
+    const gameH2 = document.createElement("h5");
+    gameH2.innerText = `
+            GameID : ${game.gameID}
+            PuzzleID : ${game.puzzleID}
+          `;
+    const gameButton = document.createElement("button");
+    gameButton.innerText = "Join";
+    gameButton.className = "puzzle-button";
+
+    gameButton.addEventListener("click", () => {
+      getPuzzleUIRequest(game.gameID, playerID, game.puzzleID);
+      joinGameRequest(game.gameID, game.puzzleID, playerID);
+
+      const checkButtonContainer = document.getElementById(
+        "checkgame-button-container"
+      );
+      removeAllChildNodes(checkButtonContainer);
+      const checkButton = document.createElement("button");
+      checkButton.addEventListener("click", () => {
+        checkGameRequest(game.gameID, playerID);
+      });
+      checkButton.className = "checkgame-button";
+      checkButton.id = "checkgame";
+      checkButton.innerText = "Check Solution";
+      checkButtonContainer.appendChild(checkButton);
+    });
+    gameContainer.appendChild(gameH2);
+    gameContainer.appendChild(gameButton);
+    gamesTable.appendChild(gameContainer);
+  });
+}
+
+function colorChange(root) {
+  var colors = ["#ff7f7f"];
+  colors.forEach((color) => {
+    root.style.backgroundColor = color;
+  });
+}
+
+function colorInvalidAnswers(gameData) {
+  gameData.forEach((game) => {
+    var row = game.row;
+    var col = game.column;
+    var cellID = row + "," + col;
+    var cellInput = document.getElementById(cellID);
+    cellInput.className = "grid-cell-input-color";
+    function resetColor() {
+      cellInput.className = "grid-cell-input";
+      cellInput.value = "";
+    }
+
+    setTimeout(resetColor, 3000);
+  });
+}
+
+function fillInGameData(gameData) {
+  gameData.forEach((game) => {
+    var row = game.row;
+    var col = game.col;
+    var cellID = row + "," + col;
+    var cellInput = document.getElementById(cellID);
+    if (cellInput) {
+      cellInput.value = game.value;
+    }
+  });
+}
+
+function createGameRequest(puzzleID, gameID, playerID) {
+  var req = new XMLHttpRequest();
+  req.addEventListener("load", function onPuzzleLoad() {
+    console.log("game response", this.responseText.replace(/\r?\n/g, "\u21B5"));
+
+    // var listOfStrings = this.responseText.split(";");
+    // var gameData = [];
+    // listOfStrings.forEach((exp) => {
+    //   if (exp !== "") {
+    //     // console.log(exp);
+    //     gameData.push(JSON.parse(exp));
+    //   }
+    // });
+    // var actualGameData = {
+    //   rows: parseInt(gameData[0].rows),
+    //   columns: parseInt(gameData[1].columns),
+    //   words: [],
+    // };
+    // for (let i = 2; i < gameData.length; i++) {
+    //   var wordData = gameData[i];
+    //   console.log("row", parseInt(wordData.row), "col", parseInt(wordData.col));
+    //   var word = {
+    //     id: parseInt(wordData.id),
+    //     row: parseInt(wordData.row),
+    //     col: parseInt(wordData.col),
+    //     word: parseInt(wordData.word),
+    //     direction: wordData.direction,
+    //     clue: wordData.clue,
+    //   };
+    //   actualGameData.words.push(word);
+    // }
+    // renderGameData(gameID, playerID, actualGameData);
   });
   req.addEventListener("error", function onPuzzleError() {
     console.error("watch error", memoryGame.server);
@@ -517,7 +513,7 @@ function createGameRequest(puzzleID, gameID, playerID) {
   req.send();
 }
 
-function createGame(puzzleID,playerID) {
+function createGame(puzzleID, playerID) {
   const gamesTable = document.getElementById("gamesID");
 
   var words = [
@@ -545,12 +541,21 @@ function createGame(puzzleID,playerID) {
   const gameButton = document.createElement("button");
   gameButton.innerText = "Join";
   gameButton.className = "puzzle-button";
-  gameButton.addEventListener("click",()=>{
-
-    getPuzzleUIRequest(gameID, playerID,puzzleID);
-    joinGameRequest(gameID,puzzleID,playerID);
-
-
+  gameButton.addEventListener("click", () => {
+    getPuzzleUIRequest(gameID, playerID, puzzleID);
+    joinGameRequest(gameID, puzzleID, playerID);
+    const checkButtonContainer = document.getElementById(
+      "checkgame-button-container"
+    );
+    removeAllChildNodes(checkButtonContainer);
+    const checkButton = document.createElement("button");
+    checkButton.className = "checkgame-button";
+    checkButton.id = "checkgame";
+    checkButton.innerText = "Check Solution";
+    checkButton.addEventListener("click", () => {
+      checkGameRequest(gameID, playerID);
+    });
+    checkButtonContainer.appendChild(checkButton);
   });
 
   gameContainer.appendChild(gameH2);
@@ -561,8 +566,8 @@ function createGame(puzzleID,playerID) {
   return gameID;
 }
 
-function forceLowerCase(val){
-    return val.toLowerCase();
+function forceLowerCase(val) {
+  return val.toLowerCase();
 }
 function renderClues(words) {
   const clueBlock = document.getElementById("clues");
@@ -582,11 +587,7 @@ function renderClues(words) {
   words.forEach((word) => {
     const clueH5 = document.createElement("h5");
     clueH5.style = "text-decoration:none";
-    clueH5.innerText =
-      word.id.toString() +
-      ". " +
-
-      word.clue;
+    clueH5.innerText = word.id.toString() + ". " + word.clue;
     if (word.direction === "ACROSS") {
       acrossElements.appendChild(clueH5);
     } else {
@@ -598,21 +599,18 @@ function renderClues(words) {
   clueBlock.appendChild(downElements);
 }
 
-
 function removeAllChildNodes(parent) {
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
-    }
+  while (parent.firstChild) {
+    parent.removeChild(parent.firstChild);
+  }
 }
 
 function renderGameData(gameID, playerID, puzzleData) {
-
   const grid = document.getElementById("grid");
-//   console.log(puzzleData);
-
+  //   console.log(puzzleData);
 
   const gridTableContainer = document.getElementById("table");
-  const cluesContainer =  document.getElementById("clues");
+  const cluesContainer = document.getElementById("clues");
   removeAllChildNodes(gridTableContainer);
   removeAllChildNodes(cluesContainer);
 
@@ -660,17 +658,18 @@ function renderGameData(gameID, playerID, puzzleData) {
 
             // cell input and label shenanigans
             var cellInput = document.createElement("input");
-            cellInput.id =  rowIndex.toString() +"," + (colIndex + dy).toString()
+            cellInput.id =
+              rowIndex.toString() + "," + (colIndex + dy).toString();
             cellInput.maxLength = "1";
             cellInput.className = "grid-cell-input";
 
-            var initialValue = cellInput.value;
             cellInput.onkeyup = (ev) => {
-                ev.target.value = ev.target.value.toLowerCase();
-
+              ev.target.value = ev.target.value.toLowerCase();
               if (ev.target.value != "") {
                 var url =
-                "http://" + memoryGame.server + "/enter/" +
+                  "http://" +
+                  memoryGame.server +
+                  "/enter/" +
                   gameID +
                   "/" +
                   playerID +
@@ -680,13 +679,13 @@ function renderGameData(gameID, playerID, puzzleData) {
                   rowIndex +
                   "," +
                   (colIndex + dy);
-                console.log(url);
-                
-                enterLetterRequest(url) 
+
+                enterLetterRequest(url);
               } else {
-            
                 var url =
-                "http://" + memoryGame.server +"/erase/" +
+                  "http://" +
+                  memoryGame.server +
+                  "/erase/" +
                   gameID +
                   "/" +
                   playerID +
@@ -694,15 +693,10 @@ function renderGameData(gameID, playerID, puzzleData) {
                   rowIndex +
                   "," +
                   (colIndex + dy);
-                console.log(url);
-                if (initialValue!=""){
-                 eraseLetterRequest(url);
-                }
+
+                eraseLetterRequest(url);
               }
-
-
             };
-            
 
             // do the middle
             var middleDivSide = document.createElement("div");
@@ -742,15 +736,17 @@ function renderGameData(gameID, playerID, puzzleData) {
 
             // cell input and label shenanigans
             var cellInput = document.createElement("input");
-            cellInput.id =  (rowIndex+dx).toString() +"," + (colIndex).toString()
+            cellInput.id =
+              (rowIndex + dx).toString() + "," + colIndex.toString();
             cellInput.className = "grid-cell-input";
             cellInput.maxLength = "1";
             cellInput.onkeyup = (ev) => {
-
-                ev.target.value = ev.target.value.toLowerCase();
+              ev.target.value = ev.target.value.toLowerCase();
               if (ev.target.value != "") {
                 var url =
-                "http://" +memoryGame.server + "/enter/" +
+                  "http://" +
+                  memoryGame.server +
+                  "/enter/" +
                   gameID +
                   "/" +
                   playerID +
@@ -761,10 +757,12 @@ function renderGameData(gameID, playerID, puzzleData) {
                   "," +
                   colIndex;
                 console.log(url);
-                enterLetterRequest(url) 
+                enterLetterRequest(url);
               } else {
                 var url =
-                "http://" +memoryGame.server +"/erase/" +
+                  "http://" +
+                  memoryGame.server +
+                  "/erase/" +
                   gameID +
                   "/" +
                   playerID +
@@ -773,12 +771,9 @@ function renderGameData(gameID, playerID, puzzleData) {
                   "," +
                   colIndex;
                 console.log(url);
+                console.log(initialValue);
                 eraseLetterRequest(url);
               }
-       
-
-      
-
             };
             // do the middle
             var middleDivSide = document.createElement("div");

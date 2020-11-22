@@ -1,231 +1,210 @@
-#grid{
+/*header suff
+**/
 
-    /* display:grid;
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.header-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#crossword-server {
+  color: white;
+  font-size: 1rem;
+  height: 2.5rem;
+  text-align: center;
+  background-color: #352315;
+}
+#grid {
+  /* display:grid;
     height :750px;
     width: 750px; */
-    display:flex;
-    flex-direction: row;
-    align-items:center;
-    justify-content:space-between;
-
-}
-.normal-cell{
-
-    width: 50px;
-    height: 50px;
-
-}
-.grid-cell-black{
-
-    width: 65px;
-    height: 65px;
-    border: 1px solid black;
-    background-color:black;
-    border: 1px solid grey;
- 
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.grid-cell-white{
-
-    width: 65px;
-    height: 65px;
-    border: 1px solid black;
-    background-color:white;
-    display:flex;
-    flex-direction:row;
-    
-
+.normal-cell {
+  width: 50px;
+  height: 50px;
 }
 
-.grid-cell-white-with-label{
-
-    width: 50px;
-    height: 50px;
-    border: 1px solid black;
-    background-color:white;
-    display:flex;
-    flex-direction: column;
-
- 
-}
-.grid-cell-input{
-
-    width: 35px;
-    height: 35px;
- 
+.grid-cell-black {
+  width: 65px;
+  height: 65px;
+  border: 1px solid black;
+  background-color: black;
+  border: 1px solid grey;
 }
 
-.grid-cell-input-label{
-   
-    color: black;
-    height : 0.2rem;
-
-   
-
+.grid-cell-white {
+  width: 65px;
+  height: 65px;
+  border: 1px solid black;
+  background-color: white;
+  display: flex;
+  flex-direction: row;
 }
 
-
-.grid-cell-middle{
-
-    display:flex;
-    flex-direction:column;
-
-
+.grid-cell-white-with-label {
+  width: 50px;
+  height: 50px;
+  border: 1px solid black;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
 }
 
-.grid-cell-top{
-
-    height : 15px;
-    text-align:center;
-
-}
-.grid-cell-bottom{
-
-    height : 10px;
-
-
-}
-.grid-cell-left{
-
-    width : 10px;
-    text-align:center;
-    padding-top:1rem;
-
+.grid-cell-input {
+  width: 35px;
+  height: 35px;
 }
 
-.grid-cell-right{
-
- width : 10px;
-    
-}
-.grid-row{
-
-    display:flex;
-    flex-direction:row;
-
-
+.grid-cell-input-color {
+  width: 35px;
+  height: 35px;
+  background-color: #ff7f7f;
 }
 
+.grid-cell-input-label {
+  color: black;
+  height: 0.2rem;
+}
 
+.grid-cell-middle {
+  display: flex;
+  flex-direction: column;
+}
 
+.grid-cell-top {
+  height: 15px;
+  text-align: center;
+}
 
+.grid-cell-bottom {
+  height: 10px;
+}
 
+.grid-cell-left {
+  width: 10px;
+  text-align: center;
+  padding-top: 1rem;
+}
+
+.grid-cell-right {
+  width: 10px;
+}
+
+.grid-row {
+  display: flex;
+  flex-direction: row;
+}
 
 /**
 table original ui
 */
 table.memory-board {
-    border-spacing: 2px;
-    border-collapse: separate;
-  }
-  table.memory-board tr td {
-    width: 2em;
-    height: 2.2em;
-    text-align: center;
-    vertical-align: middle;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-    color: rgba(0, 0, 0, 0);
-    padding: 0 !important;
-    border: 1px solid black;
-    border-radius: 4px;
-  }
-  table.memory-board td:not(:empty) {
-    background: gray;
-  }
-  table.memory-board td:empty.card-visible {
-    border: 1px solid rgba(0, 0, 0, .2);
-  }
-  table.memory-board td.card-visible {
-    color: rgba(0, 0, 0, 1);
-    background: white;
-  }
-  table.memory-board td.card-visible.card-control {
-    background: rgba(255, 255, 0, .25);
-    border-color: rgb(128, 64, 0);
-  }
-  table.memory-board td.card-blocked {
-    background: rgba(0, 255, 0, .25);
-    border-color: rgb(64, 128, 0);
-    cursor: wait;
-  }
-  
-  /**
+  border-spacing: 2px;
+  border-collapse: separate;
+}
+
+table.memory-board tr td {
+  width: 2em;
+  height: 2.2em;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  color: rgba(0, 0, 0, 0);
+  padding: 0 !important;
+  border: 1px solid black;
+  border-radius: 4px;
+}
+
+table.memory-board td:not(:empty) {
+  background: gray;
+}
+
+table.memory-board td:empty.card-visible {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+table.memory-board td.card-visible {
+  color: rgba(0, 0, 0, 1);
+  background: white;
+}
+
+table.memory-board td.card-visible.card-control {
+  background: rgba(255, 255, 0, 0.25);
+  border-color: rgb(128, 64, 0);
+}
+
+table.memory-board td.card-blocked {
+  background: rgba(0, 255, 0, 0.25);
+  border-color: rgb(64, 128, 0);
+  cursor: wait;
+}
+
+/**
   create nice acade button
   */
 
-  #crossword-play{
-
-
-    height: 3rem;
-    width: 10rem;
-    background-color: lightblue; 
-
-    
-
-  }
+#crossword-play {
+  height: 3rem;
+  width: 10rem;
+  background-color: #3b5998;
+  color: white;
+  font-weight: 999;
+  font-size: 1.2rem;
+}
 
 /**
   puzzles
 */
 
-.puzzle-container{
-
-
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-    justify-content: space-evenly;
-    border: 1px solid black;
-    height: 100px;
-    width: 500px;
-    padding:1rem;
-
-
+.puzzle-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  border: 1px solid black;
+  height: 100px;
+  width: 500px;
+  padding: 1rem;
 }
 
-.puzzle-button{
-
-    height: 3rem;
-    width: 7rem;
-    color:white;
-    background-color: lightblue; 
-
+.puzzle-button {
+  height: 3rem;
+  width: 7rem;
+  color: white;
+  background-color: #3b5998;
 }
 
-.ui-accessories{
-
-
-    display:flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-
-
-
-
-
+.ui-accessories {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
-
 
 /**
 
   games 
 
 */
-.game{
-   
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    /* text-decoration: underline; */
-
-
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* text-decoration: underline; */
 }
 
-h2{
- text-decoration: underline;
-
+h2 {
+  text-decoration: underline;
 }
 
 /**
@@ -234,16 +213,21 @@ h2{
 
 */
 
-.across-clues{
-
-
-  
-
+.across-clues {
 }
 
-.downclues{
+.downclues {
+}
 
+/**
+check game button
+*/
 
-
-
+.checkgame-button {
+  background-color: #556b2f;
+  width: 200px;
+  height: 50px;
+  color: white;
+  font-weight: 999;
+  font-size: 1.5rem;
 }
