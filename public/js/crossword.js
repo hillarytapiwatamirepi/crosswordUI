@@ -41,6 +41,7 @@ function memoryGame() {
   // var flippingCell = null;
 
   // console.log(server);
+
   var play = (memoryGame.play = function play(server) {
     console.log("playing on server", server);
     if (serverBox) {
@@ -91,111 +92,50 @@ function memoryGame() {
     req.send();
   }
 
-  // function watchAndLook() {
-  //   var req = new XMLHttpRequest();
-  //   req.addEventListener('load', function onWatchLoad() {
-  //     console.log('watch response', this.responseText.replace(/\r?\n/g, '\u21B5'));
-  //     refreshBoard(this.responseText);
-  //     setTimeout(watchAndLook, 1);
-  //   });
-  //   req.addEventListener('loadstart', function onWatchStart() {
-  //     console.log('watch start');
-  //     setTimeout(look, 1);
-  //   });
-  //   req.addEventListener('error', function onWatchError() {
-  //     console.error('watch error', memoryGame.server);
-  //   });
-  //   req.open('GET', 'http://' + memoryGame.server + '/watch/' + playerID);
-  //   console.log('sending watch request');
-  //   req.send();
-  // }
-
-  // function look() {
-  //   var req = new XMLHttpRequest();
-  //   req.addEventListener('load', function onLookLoad() {
-  //     console.log('look response', this.responseText.replace(/\r?\n/g, '\u21B5'));
-  //     refreshBoard(this.responseText);
-  //   });
-  //   req.addEventListener('error', function onLookError() {
-  //     console.error('look error', memoryGame.server);
-  //   });
-  //   req.open('GET', 'http://' + memoryGame.server + '/look/' + playerID);
-  //   console.log('sending look request');
-  //   req.send();
-  // }
-
-  // function flip(event) {
-  //   if (event.target.tagName !== 'TD') { return; }
-  //   if (flippingCell) {
-  //     console.log('already waiting to flip a card');
-  //     return;
-  //   }
-
-  //   flippingCell = event.target;
-  //   flippingCell.classList.add('card-blocked');
-  //   var col = indexOfElement(flippingCell);
-  //   var row = indexOfElement(flippingCell.parentElement);
-  //   var url = memoryGame.server + '/flip/' + playerID + '/' + row + ',' + col;
-  //   var req = new XMLHttpRequest();
-  //   req.addEventListener('load', function onFlipLoad() {
-  //     console.log('flip response', this.responseText.replace(/\r?\n/g, '\u21B5'));
-  //     refreshBoard(this.responseText);
-  //   });
-  //   req.addEventListener('loadend', function onFlipDone() {
-  //     flippingCell.classList.remove('card-blocked');
-  //     flippingCell = null;
-  //   });
-  //   req.addEventListener('error', function onFlipError() {
-  //     console.error('flip error', url);
-  //   });
-  //   req.open('GET', 'http://' + url);
-  //   console.log('sending flip request');
-  //   req.send();
-  // }
-
-  // function indexOfElement(elt) {
-  //   return Array.prototype.indexOf.call(elt.parentElement.children, elt);
-  // }
-
-  // function refreshBoard(text) {
-  //   var board = text.split(/\r?\n/);
-  //   var dims = board.shift().split('x');
-  //   var rows = parseInt(dims.shift());
-  //   var cols = parseInt(dims.shift());
-  //   var cards = board.map(function(line) { return line.split(' '); });
-
-  //   for (var row = 0; row < rows; row++) {
-  //     var tableRow = boardTable.children[row] ||
-  //                    boardTable.appendChild(document.createElement('tr'));
-  //     for (var col = 0; col < cols; col++) {
-  //       var tableCell = tableRow.children[col] ||
-  //                       tableRow.appendChild(document.createElement('td'));
-  //       var card = cards.shift();
-  //       refreshCell(tableCell, card[0], card[1]);
-  //     }
-  //   }
-  // }
-
-  // function refreshCell(tableCell, status, text) {
-  //   tableCell.classList.remove('card-visible');
-  //   tableCell.classList.remove('card-control');
-  //   tableCell.innerText = '';
-  //   if (status === 'none') {
-  //     tableCell.classList.add('card-visible');
-  //   } else if (status === 'down') {
-  //     tableCell.innerText = '?';
-  //   } else if (status === 'up') {
-  //     tableCell.classList.add('card-visible');
-  //     tableCell.innerText = text;
-  //   } else if (status === 'my') {
-  //     tableCell.classList.add('card-visible');
-  //     tableCell.classList.add('card-control');
-  //     tableCell.innerText = text;
-  //   } else {
-  //     console.error('invalid board cell', status, text);
-  //   }
-  // }
 }
+
+function getPlayersRequest(gameID,dom){
+
+  var req = new XMLHttpRequest();
+  req.addEventListener("load", function onPuzzleLoad() {
+    console.log(
+      "game data response",
+      this.responseText.replace(/\r?\n/g, "\u21B5")
+    );
+    var listOfStrings = this.responseText.split(",");
+    console.log(listOfStrings)
+    var gameData = [];
+    listOfStrings.forEach((exp) => {
+      if (exp !== "") {
+        gameData.push(exp);
+      }
+    });
+ 
+    gameData.forEach((player)=>{
+
+        const tag = document.createElement("h4");
+        tag.innerText = player;
+        dom.appendChild(tag);
+
+    })
+    // return gameData;
+
+  });
+  req.addEventListener("error", function onPuzzleError() {
+    console.error("watch error", memoryGame.server);
+  });
+  req.open(
+    "GET",
+    "http://" + memoryGame.server + "/players/" + gameID 
+  );
+  console.log("join request");
+  req.send();
+
+
+
+
+}
+
 
 function drawPuzzlesTable(puzzleData, playerID) {
   const puzzlesTable = document.getElementById("puzzlesID");
@@ -411,6 +351,11 @@ function drawGames(playerID, gameData) {
   gameData.forEach((game) => {
     const gameContainer = document.createElement("div");
     gameContainer.className = "puzzle-container";
+
+    const gameContainerHeader = document.createElement("div");
+    gameContainerHeader.className = "puzzle-container-header";
+
+
     const gameH2 = document.createElement("h5");
     gameH2.innerText = `
             GameID : ${game.gameID}
@@ -420,10 +365,15 @@ function drawGames(playerID, gameData) {
     gameButton.innerText = "Join";
     gameButton.className = "puzzle-button";
 
+
+
+
+
     gameButton.addEventListener("click", () => {
       getPuzzleUIRequest(game.gameID, playerID, game.puzzleID);
       joinGameRequest(game.gameID, game.puzzleID, playerID);
-      checkGameRequest(game.gameID, playerID);
+      // checkGameRequest(game.gameID, playerID);
+      watchAndLook(game.gameID,playerID) ;
 
       const checkButtonContainer = document.getElementById(
         "checkgame-button-container"
@@ -438,8 +388,35 @@ function drawGames(playerID, gameData) {
       checkButton.innerText = "Check Solution";
       checkButtonContainer.appendChild(checkButton);
     });
-    gameContainer.appendChild(gameH2);
-    gameContainer.appendChild(gameButton);
+
+    const gamePlayers= document.createElement("div");
+    gamePlayers.className = "game-players-container-hide" ; 
+    const showPlayers = document.createElement("button");
+    showPlayers.className = "puzzle-button";
+    showPlayers.innerText = "Views Players"
+
+
+
+
+
+    showPlayers.addEventListener("click",()=>{
+  
+      gamePlayers.classList.toggle("game-players-container-reveal");
+      removeAllChildNodes(gamePlayers);
+      getPlayersRequest(game.gameID,gamePlayers);
+  
+    });
+  
+  
+  
+    gameContainerHeader.appendChild(gameH2);
+    gameContainerHeader.appendChild(gameButton);
+    gameContainerHeader.appendChild(showPlayers);
+  
+  
+    gameContainer.appendChild(gameContainerHeader);
+    gameContainer.appendChild(gamePlayers);
+  
     gamesTable.appendChild(gameContainer);
   });
 }
@@ -532,6 +509,69 @@ function createGameRequest(puzzleID, gameID, playerID) {
   req.send();
 }
 
+function watchAndLook(gameID,playerID) {
+  var req = new XMLHttpRequest();
+  req.addEventListener('load', function onWatchLoad() {
+    console.log('watch response', this.responseText.replace(/\r?\n/g, '\u21B5'));
+    var listOfStrings = this.responseText.split(";");
+    var gameData = [];
+    listOfStrings.forEach((exp) => {
+      if (exp !== "") {
+        gameData.push(JSON.parse(exp));
+      }
+    });
+
+    //   console.log(gameData);
+    var gameLabel = document.getElementById("current-game");
+    gameLabel.innerText = gameID;
+    fillInGameData(gameData);
+    setTimeout(()=>{
+      console.log("sending for more data");
+      watchAndLook(gameID,playerID)
+    }, 1);
+  });
+  req.addEventListener('loadstart', function onWatchStart() {
+    console.log('watch start');
+    setTimeout(()=>{look(gameID,playerID)}, 1);
+  });
+  req.addEventListener('error', function onWatchError() {
+    console.error('watch error', memoryGame.server);
+  });
+  req.open('GET', 'http://' + memoryGame.server + '/watch/' + gameID + '/' + playerID);
+  console.log('sending watch request');
+  req.send();
+}
+
+function look(gameID,playerID) {
+  var req = new XMLHttpRequest();
+  req.addEventListener('load', function onLookLoad() {
+    console.log('look response', this.responseText.replace(/\r?\n/g, '\u21B5'));
+    var listOfStrings = this.responseText.split(";");
+    var gameData = [];
+    listOfStrings.forEach((exp) => {
+      if (exp !== "") {
+        gameData.push(JSON.parse(exp));
+      }
+    });
+
+    //   console.log(gameData);
+    var gameLabel = document.getElementById("current-game");
+    gameLabel.innerText = gameID;
+    fillInGameData(gameData);
+  });
+  req.addEventListener('error', function onLookError() {
+    console.error('look error', memoryGame.server);
+  });
+  req.open('GET', 'http://' + memoryGame.server + '/look/' + gameID +'/'+playerID);
+  console.log('sending look request');
+  req.send();
+}
+
+
+
+
+
+
 function createGame(puzzleID, playerID) {
   const gamesTable = document.getElementById("gamesID");
 
@@ -551,6 +591,10 @@ function createGame(puzzleID, playerID) {
   const gameContainer = document.createElement("div");
   gameContainer.className = "puzzle-container";
 
+  const gameContainerHeader = document.createElement("div");
+  gameContainerHeader.className = "puzzle-container-header";
+
+
   const gameH2 = document.createElement("h5");
 
   gameH2.innerText = `
@@ -562,8 +606,10 @@ function createGame(puzzleID, playerID) {
   gameButton.className = "puzzle-button";
   gameButton.addEventListener("click", () => {
     getPuzzleUIRequest(gameID, playerID, puzzleID);
-    joinGameRequest(gameID, puzzleID, playerID);
-    checkGameRequest(gameID, playerID);
+    joinGameRequest(gameID, puzzleID, playerID); 
+    watchAndLook(gameID,playerID) ;
+
+   
     const checkButtonContainer = document.getElementById(
       "checkgame-button-container"
     );
@@ -579,8 +625,31 @@ function createGame(puzzleID, playerID) {
     checkButtonContainer.appendChild(checkButton);
   });
 
-  gameContainer.appendChild(gameH2);
-  gameContainer.appendChild(gameButton);
+
+  const gamePlayers= document.createElement("div");
+  gamePlayers.className = "game-players-container-hide" ; 
+  const showPlayers = document.createElement("button");
+  showPlayers.className = "puzzle-button";
+  showPlayers.innerText = "Views Players"
+  
+
+  showPlayers.addEventListener("click",()=>{
+  
+    gamePlayers.classList.toggle("game-players-container-reveal");
+    removeAllChildNodes(gamePlayers);
+    getPlayersRequest(gameID,gamePlayers);
+
+  });
+
+
+
+  gameContainerHeader.appendChild(gameH2);
+  gameContainerHeader.appendChild(gameButton);
+  gameContainerHeader.appendChild(showPlayers);
+
+
+  gameContainer.appendChild(gameContainerHeader);
+  gameContainer.appendChild(gamePlayers);
 
   gamesTable.appendChild(gameContainer);
 
@@ -628,7 +697,7 @@ function removeAllChildNodes(parent) {
 
 function renderGameData(gameID, playerID, puzzleData) {
   const grid = document.getElementById("grid");
-  //   console.log(puzzleData);
+    console.log("this is the puzzle data am",puzzleData);
 
   const gridTableContainer = document.getElementById("table");
   const cluesContainer = document.getElementById("clues");
