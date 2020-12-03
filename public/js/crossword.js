@@ -325,7 +325,7 @@ class CrosswordGame{
                gameData.push(JSON.parse(exp));
              }
            });
- 
+
            await root.colorInvalidAnswers(gameData);
          }
        });
@@ -877,12 +877,12 @@ class CrosswordGame{
        });
        req.addEventListener("loadstart", function onWatchStart() {
          console.log("watch start");
-         setTimeout(() => {
-           root.look(gameID, playerID);
+         setTimeout(async() => {
+           await root.look(gameID, playerID);
          }, 1);
        });
        req.addEventListener("error", function onWatchError() {
-         console.error("watch error", this.#server);
+         console.error("watch error", root.#server);
        });
        req.open(
          "GET",
@@ -948,7 +948,7 @@ class CrosswordGame{
            }
          });
  
-         //   console.log(gameData);
+          console.log("game dta from look",gameData);
          var gameLabel = document.getElementById("current-game");
          gameLabel.innerText = gameID;
          await root.fillInGameData(gameData);
@@ -1142,21 +1142,33 @@ class CrosswordGame{
  
      async colorInvalidAnswers(gameData) {
        gameData.forEach((game) => {
+
+        // console.log("coloring game",game);
+
          var row = game.row;
          var col = game.column;
          var cellID = row + "," + col;
          var cellInput = document.getElementById(cellID);
-         cellInput.className = "grid-cell-input-color";
-         /**
-          *
-          * resets the color of a cell to white, and erases its text
-          *
-          */
-         function resetColor() {
-           cellInput.className = "grid-cell-input";
-           cellInput.value = "";
-         }
-         setTimeout(resetColor, 3000);
+      
+         if (cellInput){
+              if (game.locked){
+                cellInput.setAttribute("readonly",true);
+              }else{
+                        /**
+                *
+                * resets the color of a cell to white, and erases its text
+                *
+                */
+              cellInput.className = "grid-cell-input-color";
+              function resetColor() {
+                cellInput.className = "grid-cell-input";
+                cellInput.value = "";
+              }
+              setTimeout(resetColor, 3000);
+
+              }
+            }
+
        });
        this.#checkRep();
      }
@@ -1175,11 +1187,16 @@ class CrosswordGame{
  
      async fillInGameData(gameData) {
        gameData.forEach((game) => {
+         console.log("game",game);
          var row = game.row;
          var col = game.col;
          var cellID = row + "," + col;
          var cellInput = document.getElementById(cellID);
+
          if (cellInput) {
+          if (game.locked){
+            cellInput.setAttribute("readonly",true);
+            }
            cellInput.value = game.value;
          }
        });
