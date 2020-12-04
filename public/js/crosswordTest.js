@@ -3,63 +3,29 @@
  * A crossword Game class that implements a Web Game UI interface
  *
  */
+var fetch = require("node-fetch");
 class CrosswordGame {
-  // Fields
+  // server
+  // playerID
 
-  #server
-  #playerID
-  
 
-  /**
-   *
-   * Renders a crossword game arcade interface on a web browser
-   *
-   * Abstraction Function
-   *    AF(server,playerID) =  user interface (UI) rendered on a web browser that can display the following:
-   *
-   *               * - currents games running on the server on the Game UI
-   *               * - current puzzles that are stored on the server
-   *               * - the current board that a player has joined or created
-   *               * - the set of players that have started playing this game
-   *
-   *               where UI is a client of a server at address "http://" + {server}. The client is assigned
-   *                a random string {playerID}
-   *
-   *
-   * RI:
-   * - server === "localhost:4949"
-   * - playerID != null
-   *
-   * Safety from rep exposure
-   *
-   * - every request function sends data as a string, which is immutable
-   * - server is a string, so immutable
-   * - server and playerID are private
-   * -
-   *
-   * Thread safety argument
-   * - it only depends on the local server implementation, which is threadsafe
-   * - nothing is mutated here (all mutations happen on the server, which returns a response)
-   * - added async/await when calling and declaring functions
-   */
-
-  /**
-   *
-   * Creates a crossword Game instance
-   *
-   */
-  constructor(playerID = this.generatePlayerID(), server = this.getServer()) {
-    this.#server = server;
-    this.#playerID = playerID;
+   constructor(playerID = this.generatePlayerID(), server = this.getServer()) {  
+      
+    this.server = server;
+    this.playerID = playerID;
     
     var root = this;
-    // get the open arcade buttons
-    var serverBox = document.getElementById("crossword-server");
-    var playButton = document.getElementById("crossword-play");
+    // get the open arcade button
+    var serverBox = document.createElement("input");
+    serverBox.value = "localhost:4949";
+    // differences
+    var playButton = document.createElement("crossword-play");
+    // var serverBox = document.getElementById("crossword-server");
+    // var playButton = document.getElementById("crossword-play");   
+
     // get the server root {"localhost:4949"}
     if (serverBox) {
       serverBox.addEventListener("keypress", function (e) {
-        console.log("key pressed",e.keyCode);
         if (e.keyCode == 13) {
           serverBox.blur();
           root.play(serverBox, playButton);
@@ -71,7 +37,7 @@ class CrosswordGame {
         });
       }
     }
-    this.#checkRep();
+    this.checkRep();
   }
 
   /**
@@ -81,7 +47,9 @@ class CrosswordGame {
    */
 
   getServer() {
-    var serverBox = document.getElementById("crossword-server");
+    var serverBox = document.createElement("input");
+    serverBox.value = "localhost:4949";
+
     if (serverBox) {
       return serverBox.value;
     }
@@ -94,7 +62,8 @@ class CrosswordGame {
    */
 
   getServerAssigned() {
-    return this.#server;
+ 
+    return this.server;
   }
 
   /**
@@ -103,7 +72,7 @@ class CrosswordGame {
    *
    */
   getPlayerID() {
-    return this.#playerID;
+    return this.playerID;
   }
 
   /**
@@ -112,12 +81,12 @@ class CrosswordGame {
    *
    */
 
-  #checkRep() {
-    console.assert(
-      this.#server === "localhost:4949",
-      "make sure server localaddress is on port 4949"
-    );
-    console.assert(this.#playerID != null, "make sure playerID Is assigned");
+  checkRep() {
+    // console.assert(
+    //   this.server === "localhost:4949",
+    //   "make sure server localaddress is on port 4949"
+    // );
+    // console.assert(this.playerID != null, "make sure playerID Is assigned");
   }
 
   /**
@@ -126,9 +95,10 @@ class CrosswordGame {
    *
    * - Starts running the game for the client Webbrowser, by connecting to a server, whose address
    *   is given by  "http://{server}" , e.g. "http://localhost:8080"
+   * - Disables serverBox, playButton
    * - Displays the currents games running on the server on the Game UI
    * - Displays the current puzzles that are stored on the server
-   * - Disables serverBox and playButton
+   * - Renders
    *
    * @param serverBox - an html input element
    *  @param playButton - an html button element
@@ -136,46 +106,36 @@ class CrosswordGame {
    */
 
   async play(serverBox, playButton) {
-    console.log("playing on server", this.#server);
+
+
     if (serverBox) {
       serverBox.disabled = true;
     }
     if (playButton) {
       playButton.disabled = true;
     }
-    var welcomeContainer = document.getElementById("welcome-tag");
-    welcomeContainer.innerText = "Welcome player : " + this.#playerID;
-    await this.getPuzzles(this.#playerID);
-    await this.getGamesRequest(this.#playerID);
-  }
+    // var welcomeContainer = document.getElementById("welcome-tag");
+    var welcomeContainer = document.createElement("welcome-tag");
+    welcomeContainer.innerText = "Welcome player : " + this.playerID;
+    // var puzzles =
+    // var games = await this.getGamesRequest(this.playerID);
+    if ((serverBox)||(playButton)){
+    return {
+      puzzles : await this.getPuzzles(this.playerID),
+      games :await this.getGamesRequest(this.playerID)
+    }}
+    else{
+     return {
+        puzzles:[],
+        games:[]
+      }
+    }
  
-  /*
-   * 
-   * refresh Games for the game UI
-   */
-
-  async refreshGames(){
-
-    if (serverBox) {
-      serverBox.disabled = true;
-    }
-    if (playButton) {
-      playButton.disabled = true;
-    }
-    var welcomeContainer = document.getElementById("welcome-tag");
-    welcomeContainer.innerText = "Welcome player : " + this.#playerID;
-    await this.getPuzzles(this.#playerID);
-    await this.getGamesRequest(this.#playerID); 
   }
-
 
   /**
-   *
-   *
    * @returns a string representation of playerID, which represents a user who has opened their crossword arcade
    *  on the browser and they are using the WEBUI to play crossword puzzle
-   *
-   *
    */
   generatePlayerID() {
     var words = [
@@ -200,7 +160,7 @@ class CrosswordGame {
    * gets all the puzzles that are currently running on the server at address "http://{server}"  by making
    * a GET request to the the server
    *
-   *  request url format : "http://" + this.#server + "/currentPuzzles")
+   *  request url format : "http://" + this.server + "/currentPuzzles")
    *
    * - The function also listens for a response from the server, and the response
    *   is expected to be in this example format :
@@ -220,37 +180,35 @@ class CrosswordGame {
    */
   async getPuzzles(
     playerID,
-    url = "http://" + this.#server + "/currentPuzzles"
+    url = "http://" + this.server + "/currentPuzzles"
   ) {
-    var req = new XMLHttpRequest();
+
     var root = this;
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log(
-        "puzzles response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-      // splits the strings by regex
-      var listOfStrings = this.responseText.split(";");
+    var myPuzzles = []
+    await fetch(url)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
+        console.log(err)
+      }
+      else{
+      var listOfStrings = data.split(";");
       var puzzleData = [];
       // parses each string
       listOfStrings.forEach((exp) => {
         if (exp !== "") {
-          console.log(JSON.parse(exp));
           puzzleData.push(JSON.parse(exp));
+          myPuzzles.push(JSON.parse(exp));
         }
       });
       // uses it draw puzzles Table
-
       root.drawPuzzlesTable(puzzleData, playerID);
-      return puzzleData;
+      }
     });
 
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", this.#server);
-    });
-    req.open("GET", url);
-    req.send();
-    this.#checkRep();
+    this.checkRep();
+    return myPuzzles;
+
   }
 
   /**
@@ -277,22 +235,21 @@ class CrosswordGame {
    *
    *
    * @param gameID - current game with {gameID} that the user wants to view players in
-   * @param dom -  an html "div" element to be rendered on the UI
+   * @param dom -  an html element to be rendered on the UI
    *
    *
    */
   async getPlayersRequest(gameID, dom) {
-    var root = this;
-    var req = new XMLHttpRequest();
+   
+    var myGameData = [];
+    await fetch("http://" + this.server + "/players/" + gameID)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
+        console.log(err)
+      }else{
 
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log(
-        "game data response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-      // split by regex
-      var listOfStrings = this.responseText.split(",");
-
+      var listOfStrings = data.split(",");
       var gameData = [];
       //parse
       listOfStrings.forEach((exp) => {
@@ -307,15 +264,14 @@ class CrosswordGame {
         dom.appendChild(tag);
       });
 
-      return gameData;
-    });
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", root.#server);
-    });
-    req.open("GET", "http://" + this.#server + "/players/" + gameID);
-    console.log("join request");
-    req.send();
-    this.#checkRep();
+      myGameData = gameData;
+    }
+    })
+    this.checkRep();
+    return {
+     gameData : myGameData,
+     html : dom
+    }
   }
 
   /**
@@ -353,45 +309,34 @@ class CrosswordGame {
    */
 
   async checkGameRequest(gameID, playerID) {
-    var req = new XMLHttpRequest();
-    var root = this;
-    req.addEventListener("load", async function onPuzzleLoad() {
-      console.log(
-        "game data response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
+    var root =this;
+    await fetch("http://" + this.server + "/check/" + gameID + "/" + playerID)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
+        return err;
+      }else{
+        if (data.includes("solved")) {
+          const gameStatusContainer = document.getElementById("game-status");
+          gameStatusContainer.innerText = "Solved";
+          gameStatusContainer.style.color = "#556b2f";
+        } else {
+          const gameStatusContainer = document.getElementById("game-status");
+          gameStatusContainer.innerText = "UnSolved";
+          gameStatusContainer.style.color = "#ff7f7f";
+          var listOfStrings = data.split(";");
+          var gameData = [];
+          listOfStrings.forEach((exp) => {
+            if (exp !== "") {
+              gameData.push(JSON.parse(exp));
+            }
+          });
+          root.colorInvalidAnswers(gameData);
+        }
 
-      if (this.responseText.includes("solved")) {
-        const gameStatusContainer = document.getElementById("game-status");
-        gameStatusContainer.innerText = "Solved";
-        gameStatusContainer.style.color = "#556b2f";
-      } else {
-        const gameStatusContainer = document.getElementById("game-status");
-        gameStatusContainer.innerText = "UnSolved";
-        gameStatusContainer.style.color = "#ff7f7f";
-
-        var listOfStrings = this.responseText.split(";");
-        var gameData = [];
-        listOfStrings.forEach((exp) => {
-          if (exp !== "") {
-            gameData.push(JSON.parse(exp));
-          }
-        });
-
-        await root.colorInvalidAnswers(gameData);
       }
-    });
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", root.#server);
-    });
-    req.open(
-      "GET",
-      "http://" + this.#server + "/check/" + gameID + "/" + playerID
-    );
-    console.log("join request");
-    req.send();
-    this.#checkRep();
+    })
+    this.checkRep();
   }
 
   /**
@@ -429,23 +374,15 @@ class CrosswordGame {
    */
 
   async enterLetterRequest(url) {
-    var req = new XMLHttpRequest();
+    await fetch(url)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
+      }else{
 
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log(
-        "game response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-    });
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", this.#server);
-    });
-
-    req.open("GET", url);
-    console.log("enter letter request request");
-    req.send();
-    this.#checkRep();
+      }
+    })
+    this.checkRep();
   }
 
   /**
@@ -482,22 +419,14 @@ class CrosswordGame {
    */
 
   async eraseLetterRequest(url) {
-    var req = new XMLHttpRequest();
-    req.addEventListener("load", function onPuzzleLoad() {
-      console.log(
-        "game response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
+    await fetch(url)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
+      }else{
+      }
     });
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", this.#server);
-    });
-
-    req.open("GET", url);
-    console.log("erase letter request request");
-    req.send();
-    this.#checkRep();
+    this.checkRep();
   }
 
   /**
@@ -541,36 +470,28 @@ class CrosswordGame {
    *
    */
   async joinGameRequest(gameID, playerID) {
-    var req = new XMLHttpRequest();
     var root = this;
-    req.addEventListener("load", async function onPuzzleLoad() {
-      console.log(
-        "game data response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-      var listOfStrings = this.responseText.split(";");
-      var gameData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-          gameData.push(JSON.parse(exp));
-        }
-      });
+    await fetch(`http://${this.server}/join/${gameID}/${playerID}`)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
 
-      //   console.log(gameData);
-      var gameLabel = document.getElementById("current-game");
-      gameLabel.innerText = gameID;
-      root.fillInGameData(gameData);
-    });
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", root.#server);
-    });
-    req.open(
-      "GET",
-      "http://" + this.#server + "/join/" + gameID + "/" + playerID
-    );
-    console.log("join request");
-    req.send();
-    this.#checkRep();
+      }else{
+        var listOfStrings = data.split(";");
+        var gameData = [];
+        listOfStrings.forEach((exp) => {
+          if (exp !== "") {
+            gameData.push(JSON.parse(exp));
+          }
+        });
+        //   console.log(gameData);
+        var gameLabel = document.getElementById("current-game");
+        gameLabel.innerText = gameID;
+        root.fillInGameData(gameData);
+
+      }
+    })
+    this.checkRep();
   }
 
   /**
@@ -654,49 +575,42 @@ class CrosswordGame {
    */
 
   async getPuzzleUIRequest(gameID, playerID, puzzleID) {
-    var req = new XMLHttpRequest();
     var root = this;
-    req.addEventListener("load", async function onPuzzleLoad() {
-      console.log(
-        "puzzles response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
+    await fetch("http://" + this.server + "/puzzle/" + puzzleID)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
 
-      var listOfStrings = this.responseText.split(";");
-      var gameData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-          gameData.push(JSON.parse(exp));
-        }
-      });
-      var actualGameData = {
-        rows: parseInt(gameData[0].rows),
-        columns: parseInt(gameData[1].columns),
-        words: [],
-      };
-      for (let i = 2; i < gameData.length; i++) {
-        var wordData = gameData[i];
-        var word = {
-          id: parseInt(wordData.id),
-          row: parseInt(wordData.row),
-          col: parseInt(wordData.col),
-          word: parseInt(wordData.word),
-          direction: wordData.direction,
-          clue: wordData.clue,
+      }else{
+        var listOfStrings = data.split(";");
+        var gameData = [];
+        listOfStrings.forEach((exp) => {
+          if (exp !== "") {
+            gameData.push(JSON.parse(exp));
+          }
+        });
+        var actualGameData = {
+          rows: parseInt(gameData[0].rows),
+          columns: parseInt(gameData[1].columns),
+          words: [],
         };
-        actualGameData.words.push(word);
+        for (let i = 2; i < gameData.length; i++) {
+          var wordData = gameData[i];
+          var word = {
+            id: parseInt(wordData.id),
+            row: parseInt(wordData.row),
+            col: parseInt(wordData.col),
+            word: parseInt(wordData.word),
+            direction: wordData.direction,
+            clue: wordData.clue,
+          };
+          actualGameData.words.push(word);
+        }
+        root.renderGameData(gameID, playerID, actualGameData);
+
       }
-
-      root.renderGameData(gameID, playerID, actualGameData);
     });
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", this.#server);
-    });
-    req.open("GET", "http://" + this.#server + "/puzzle/" + puzzleID);
-    console.log("puzzle UI request");
-    req.send();
-    this.#checkRep();
+    this.checkRep();
   }
 
   /**
@@ -737,34 +651,31 @@ class CrosswordGame {
    *
    */
 
-  async getGamesRequest(playerID) {
-    var req = new XMLHttpRequest();
+  async getGamesRequest(playerID) { 
+    var myGames = []
     var root = this;
-    req.addEventListener("load", async function onPuzzleLoad() {
-      console.log(
-        "puzzles response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-      var listOfStrings = this.responseText.split(";");
-      //   console.log(listOfStrings);
-      var gamesData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-          gamesData.push(JSON.parse(exp));
+    await fetch("http://" + this.server + "/currentGames")
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
+        return err;
+      }else{
+        var listOfStrings = data.split(";");
+        //   console.log(listOfStrings);
+        var gamesData = [];
+        listOfStrings.forEach((exp) => {
+          if (exp !== "") {
+            gamesData.push(JSON.parse(exp));
+          }
+        });
+        if (gamesData.length > 0) {
+          root.drawGames(playerID, gamesData);
         }
-      });
-      if (gamesData.length > 0) {
-        root.drawGames(playerID, gamesData);
+        myGames= gamesData;
       }
-    });
-
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", this.#server);
-    });
-    req.open("GET", "http://" + this.#server + "/currentGames");
-    console.log("games request");
-    req.send();
-    this.#checkRep();
+    })
+    this.checkRep();
+    return myGames;
   }
 
   /**
@@ -808,60 +719,54 @@ class CrosswordGame {
    */
 
   async createGameRequest(puzzleID, gameID, playerID) {
-    var req = new XMLHttpRequest();
+    var myGameData = []
     var root = this;
-    req.addEventListener("load", function onPuzzleLoad() {
-      //  console.log("game response", this.responseText.replace(/\r?\n/g, "\u21B5"));
-      var listOfStrings = this.responseText.split(";");
-      var gameData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-          // console.log(exp);
-          gameData.push(JSON.parse(exp));
-        }
-      });
-      var actualGameData = {
-        rows: parseInt(gameData[0].rows),
-        columns: parseInt(gameData[1].columns),
-        words: [],
-      };
-      for (let i = 2; i < gameData.length; i++) {
-        var wordData = gameData[i];
-        console.log(
-          "row",
-          parseInt(wordData.row),
-          "col",
-          parseInt(wordData.col)
-        );
-        var word = {
-          id: parseInt(wordData.id),
-          row: parseInt(wordData.row),
-          col: parseInt(wordData.col),
-          word: parseInt(wordData.word),
-          direction: wordData.direction,
-          clue: wordData.clue,
+    await fetch(`http://${this.server}/new/${puzzleID}/${gameID}/${playerID}`)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
+        return err;
+      }else{
+        var myresponse = "Go away " + playerID + " wanting to create the game " +  gameID + " base on puzzle "+ puzzleID;
+
+
+        if (myresponse.match(data)){
+          myGameData.push(myresponse);
+        }else{
+
+        var listOfStrings = data.split(";");
+        var gameData = [];
+        listOfStrings.forEach((exp) => {
+          if (exp !== "") {
+            // console.log(exp);
+            gameData.push(JSON.parse(exp));
+          }
+        });
+        var actualGameData = {
+          rows: parseInt(gameData[0].rows),
+          columns: parseInt(gameData[1].columns),
+          words: [],
         };
-        actualGameData.words.push(word);
+        for (let i = 2; i < gameData.length; i++) {
+          var wordData = gameData[i];
+          var word = {
+            id: parseInt(wordData.id),
+            row: parseInt(wordData.row),
+            col: parseInt(wordData.col),
+            word: parseInt(wordData.word),
+            direction: wordData.direction,
+            clue: wordData.clue,
+          };
+          actualGameData.words.push(word);
+        }
+        root.renderGameData(gameID, playerID, actualGameData);
+
+        myGameData = actualGameData;
       }
-      root.renderGameData(gameID, playerID, actualGameData);
+      }
     });
-    req.addEventListener("error", function onPuzzleError() {
-      console.error("watch error", root.#server);
-    });
-    req.open(
-      "GET",
-      "http://" +
-        this.#server +
-        "/new/" +
-        puzzleID +
-        "/" +
-        gameID +
-        "/" +
-        playerID
-    );
-    console.log("puzzles request");
-    req.send();
-    this.#checkRep();
+    this.checkRep();
+    return myGameData;
   }
 
   /**
@@ -911,50 +816,42 @@ class CrosswordGame {
    * @param playerID-  current player making the request
    *
    *
-   * 
    */
 
-  async watchAndLook(gameID, playerID) {
-    var req = new XMLHttpRequest();
-    var root = this;
-    req.addEventListener("load", async function onWatchLoad() {
-      console.log(
-        "watch response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-      var listOfStrings = this.responseText.split(";");
-      var gameData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-          gameData.push(JSON.parse(exp));
-        }
-      });
+  async watchAndLook(gameID, playerID) { 
 
-      //   console.log(gameData);
-      var gameLabel = document.getElementById("current-game");
-      gameLabel.innerText = gameID;
-      await root.fillInGameData(gameData);
-      setTimeout(async () => {
-        console.log("sending for more data");
-        await root.watchAndLook(gameID, playerID);
-      }, 1);
-    });
-    req.addEventListener("loadstart", function onWatchStart() {
-      console.log("watch start");
+    var root = this;
+    await fetch("http://" + this.server + "/watch/" + gameID + "/" + playerID)
+    .then(response => response.text())
+    .then((data,err)=>{
+
       setTimeout(async () => {
         await root.look(gameID, playerID);
       }, 1);
-    });
-    req.addEventListener("error", function onWatchError() {
-      console.error("watch error", root.#server);
-    });
-    req.open(
-      "GET",
-      "http://" + this.#server + "/watch/" + gameID + "/" + playerID
-    );
-    console.log("sending watch request");
-    req.send();
-    this.#checkRep();
+
+      if(err){
+
+
+      }else{
+        var listOfStrings = data.split(";");
+        var gameData = [];
+        listOfStrings.forEach((exp) => {
+          if (exp !== "") {
+            gameData.push(JSON.parse(exp));
+          }
+        });
+        //   console.log(gameData);
+        var gameLabel = document.getElementById("current-game");
+        gameLabel.innerText = gameID;
+        root.fillInGameData(gameData);
+        setTimeout(async () => {
+          console.log("sending for more data");
+          await root.watchAndLook(gameID, playerID);
+        }, 1);
+
+      }
+    })
+    this.checkRep();
   }
 
   /**
@@ -998,38 +895,30 @@ class CrosswordGame {
    *
    *
    */
-
   async look(gameID, playerID) {
-    var req = new XMLHttpRequest();
-    var root = this;
-    req.addEventListener("load", async function onLookLoad() {
-      console.log(
-        "look response",
-        this.responseText.replace(/\r?\n/g, "\u21B5")
-      );
-      var listOfStrings = this.responseText.split(";");
-      var gameData = [];
-      listOfStrings.forEach((exp) => {
-        if (exp !== "") {
-          gameData.push(JSON.parse(exp));
-        }
-      });
+    await fetch("http://" + this.server + "/look/" + gameID + "/" + playerID)
+    .then(response => response.text())
+    .then((data,err)=>{
+      if(err){
 
-      console.log("game dta from look", gameData);
-      var gameLabel = document.getElementById("current-game");
-      gameLabel.innerText = gameID;
-      await root.fillInGameData(gameData);
-    });
-    req.addEventListener("error", function onLookError() {
-      console.error("look error", this.#server);
-    });
-    req.open(
-      "GET",
-      "http://" + this.#server + "/look/" + gameID + "/" + playerID
-    );
-    console.log("sending look request");
-    req.send();
-    this.#checkRep();
+
+
+      }else{
+        var listOfStrings = data.split(";");
+        var gameData = [];
+        listOfStrings.forEach((exp) => {
+          if (exp !== "") {
+            gameData.push(JSON.parse(exp));
+          }
+        });
+        var gameLabel = document.getElementById("current-game");
+        gameLabel.innerText = gameID;
+        root.fillInGameData(gameData);
+
+      }
+    })
+
+    this.checkRep();
   }
 
   //////////////////////////    HTML/JS UI ELEMENTS : MUTATORS     ///////////////////////
@@ -1070,24 +959,9 @@ class CrosswordGame {
         const puzzleButton = document.createElement("button");
         puzzleButton.innerText = "Create Game";
         puzzleButton.addEventListener("click", async () => {
-          var gameID = await this.createGame(piece.id, playerID);
+          var gameID =this.createGame(piece.id, playerID);
           await this.createGameRequest(piece.id, gameID, playerID);
-          await this.checkGameRequest(gameID, playerID);
-          const checkButtonContainer = document.getElementById(
-            "checkgame-button-container"
-          );
-          this.removeAllChildNodes(checkButtonContainer);
-          const checkButton = document.createElement("button");
-          checkButton.addEventListener("click",async () => {
-            await this.checkGameRequest(gameID, playerID);
-            await this.look(gameID,playerID);
-          });
-          checkButton.className = "checkgame-button";
-          checkButton.id = "checkgame";
-          checkButton.innerText = "Check Solution";
-          checkButtonContainer.appendChild(checkButton);
-
-
+          this.checkGameRequest(gameID, playerID);
         });
 
         puzzleButton.className = "puzzle-button";
@@ -1098,7 +972,7 @@ class CrosswordGame {
         puzzlesTable.appendChild(puzzleContainer);
       });
     }
-    this.#checkRep();
+    this.checkRep();
   }
 
   /**
@@ -1126,7 +1000,9 @@ class CrosswordGame {
    */
 
   async drawGames(playerID, gameData) {
-    const gamesTable = document.getElementById("gamesID");
+
+    const gamesTable = document.createElement("div");
+    gamesTable.id = "gamesID";
     gameData.forEach((game) => {
       const gameContainer = document.createElement("div");
       gameContainer.className = "puzzle-container";
@@ -1156,9 +1032,8 @@ class CrosswordGame {
         );
         this.removeAllChildNodes(checkButtonContainer);
         const checkButton = document.createElement("button");
-        checkButton.addEventListener("click", async() => {
-          await this.checkGameRequest(game.gameID, playerID);
-          await this.look(game.gameID,playerID);
+        checkButton.addEventListener("click", () => {
+          this.checkGameRequest(game.gameID, playerID);
         });
         checkButton.className = "checkgame-button";
         checkButton.id = "checkgame";
@@ -1187,7 +1062,7 @@ class CrosswordGame {
 
       gamesTable.appendChild(gameContainer);
     });
-    this.#checkRep();
+    this.checkRep();
   }
 
   /**
@@ -1252,7 +1127,7 @@ class CrosswordGame {
         }
       }
     });
-    this.#checkRep();
+    this.checkRep();
   }
 
   /**
@@ -1282,7 +1157,7 @@ class CrosswordGame {
         cellInput.value = game.value;
       }
     });
-    this.#checkRep();
+    this.checkRep();
   }
 
   /**
@@ -1299,13 +1174,16 @@ class CrosswordGame {
    *
    * @param puzzleID - an integer puzzleID assigned by the server, that the game is modelled after
    * @param playerID - the playerID assigned previously by the webbrowser client, that is creating the game
-   * @returns gameID -  the gameID it generated
+   * @returns {gameID}  -  the gameID it generated
    *
    *
    */
 
-  async createGame(puzzleID, playerID) {
-    const gamesTable = document.getElementById("gamesID");
+   createGame(puzzleID, playerID) {
+
+    // const gamesTable = document.getElementById("gamesID");
+    const gamesTable = document.createElement("div");
+
 
     var words = [
       ["horse", "monkey", "donkey", "parrot", "cat", "dog"],
@@ -1318,7 +1196,7 @@ class CrosswordGame {
         return arr[Math.floor(Math.random() * arr.length)];
       })
       .join("_");
-    console.log("generated gameID", gameID);
+   
 
     const gameContainer = document.createElement("div");
     gameContainer.className = "puzzle-container";
@@ -1340,17 +1218,19 @@ class CrosswordGame {
       await this.joinGameRequest(gameID, playerID);
       await this.watchAndLook(gameID, playerID);
 
-      const checkButtonContainer = document.getElementById(
-        "checkgame-button-container"
+      const checkButtonContainer = document.createElement(
+       "div"
       );
+      checkButtonContainer.id  ="checkgame-button-container";
+
+
       await this.removeAllChildNodes(checkButtonContainer);
       const checkButton = document.createElement("button");
       checkButton.className = "checkgame-button";
       checkButton.id = "checkgame";
       checkButton.innerText = "Check Solution";
-      checkButton.addEventListener("click", async() => {
-        await this.checkGameRequest(gameID, playerID);
-        await this.look(gameID,playerID);
+      checkButton.addEventListener("click", () => {
+        this.checkGameRequest(gameID, playerID);
       });
       checkButtonContainer.appendChild(checkButton);
     });
@@ -1375,7 +1255,7 @@ class CrosswordGame {
     gameContainer.appendChild(gamePlayers);
 
     gamesTable.appendChild(gameContainer);
-    this.#checkRep();
+    this.checkRep();
     return gameID;
   }
 
@@ -1428,7 +1308,7 @@ class CrosswordGame {
    */
 
   async renderClues(words) {
-    const clueBlock = document.getElementById("clues");
+    const clueBlock = document.createElement("div");
 
     const acrossH2 = document.createElement("h2");
     acrossH2.innerText = "ACROSS";
@@ -1455,7 +1335,7 @@ class CrosswordGame {
 
     clueBlock.appendChild(acrossElements);
     clueBlock.appendChild(downElements);
-    this.#checkRep();
+    this.checkRep();
   }
   /**
    *
@@ -1465,11 +1345,11 @@ class CrosswordGame {
    *
    */
 
-  async removeAllChildNodes(parent) {
+  removeAllChildNodes(parent) {
     while (parent.firstChild) {
       parent.removeChild(parent.firstChild);
     }
-    this.#checkRep();
+    this.checkRep();
   }
 
   /**
@@ -1517,13 +1397,19 @@ class CrosswordGame {
    */
 
   async renderGameData(gameID, playerID, puzzleData) {
-    const grid = document.getElementById("grid");
-    // console.log("this is the puzzle data am", puzzleData);
+    // const grid = document.getElementById("grid");
+    const grid =  document.createElement("div")
+    
 
-    const gridTableContainer = document.getElementById("table");
-    const cluesContainer = document.getElementById("clues");
-    await this.removeAllChildNodes(gridTableContainer);
-    await this.removeAllChildNodes(cluesContainer);
+    // const gridTableContainer = document.getElementById("table");
+    const gridTableContainer = document.createElement("div");
+    const cluesContainer = document.createElement("div");
+
+    // const cluesContainer = document.getElementById("clues");
+
+
+    // await this.removeAllChildNodes(gridTableContainer);
+    // await this.removeAllChildNodes(cluesContainer);
 
     const gridTable = document.createElement("table");
 
@@ -1611,33 +1497,22 @@ class CrosswordGame {
               cellInput.className = "grid-cell-input";
 
               cellInput.onkeyup = async (ev) => {
-        
                 ev.target.value = ev.target.value.toLowerCase();
-               
                 if (ev.target.value != "") {
-                  if (ev.target.value.match(/[a-zA-Z]/)){
                   var url = `http://${
-                    root.#server
+                    root.server
                   }/enter/${gameID}/${playerID}/${
                     ev.target.value
                   }/${rowIndex},${colIndex + dy}`;
 
                   await root.enterLetterRequest(url);
-                }else{
-                  ev.target.value = "";
-
-                }
                 } else {
-
-
                   var url = `http://${
-                    root.#server
+                    root.server
                   }/erase/${gameID}/${playerID}/${rowIndex},${colIndex + dy}`;
 
                   await root.eraseLetterRequest(url);
                 }
-
-
               };
 
               // do the middle
@@ -1685,22 +1560,16 @@ class CrosswordGame {
               cellInput.onkeyup = async (ev) => {
                 ev.target.value = ev.target.value.toLowerCase();
                 if (ev.target.value != "") {
-
-                  if (ev.target.value.match(/[a-zA-Z]/)){
                   var url = `http://${
-                    root.#server
+                    root.server
                   }/enter/${gameID}/${playerID}/${ev.target.value}/${
                     rowIndex + dx
                   },${colIndex}`;
-               
-                  await root.enterLetterRequest(url);
-                }else{
 
-                  ev.target.value = "";
-                }
+                  await root.enterLetterRequest(url);
                 } else {
                   var url = `http://${
-                    root.#server
+                    root.server
                   }/erase/${gameID}/${playerID}/${rowIndex + dx},${colIndex}`;
 
                   await root.eraseLetterRequest(url);
@@ -1780,7 +1649,7 @@ class CrosswordGame {
           var rowChildren = row.childNodes;
           var cellChild = rowChildren[colIndex];
           cellChild.childNodes[1].childNodes[0].innerText =
-            cellChild.childNodes[1].innerText + " " + word.id.toString();
+            cellChild.childNodes[0].innerText + " " + word.id.toString();
         }
       });
     }
@@ -1803,7 +1672,8 @@ class CrosswordGame {
     gridTableContainer.appendChild(gridTable);
     grid.appendChild(gridTableContainer);
     await this.renderClues(puzzleData.words);
-    this.#checkRep();
+    this.checkRep();
   }
 }
 
+module.exports = CrosswordGame

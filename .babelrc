@@ -1,0 +1,4 @@
+{
+    "presets": [ "@babel/env","@babel/typescript"],
+    "plugins": ["@babel/plugin-transform-runtime","transform-class-properties","@babel/plugin-transform-spread","@babel/plugin-syntax-dynamic-import"]
+}

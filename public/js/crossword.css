@@ -86,17 +86,17 @@
 }
 
 .grid-cell-bottom {
-  height: 10px;
+  height: 15px;
 }
 
 .grid-cell-left {
-  width: 10px;
+  width: 15px;
   text-align: center;
   padding-top: 1rem;
 }
 
 .grid-cell-right {
-  width: 10px;
+  width: 15px;
 }
 
 .grid-row {
